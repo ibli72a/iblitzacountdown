@@ -6,8 +6,8 @@ const nextConfig = {
   },
   // Only use basePath and assetPrefix in production
   ...(process.env.NODE_ENV === 'production' ? {
-    basePath: '/iblitzacountdown',
-    assetPrefix: '/iblitzacountdown',
+    basePath: '',
+    assetPrefix: '',
   } : {})
 }
 
