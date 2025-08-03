@@ -30,7 +30,7 @@ export default function Home() {
         setIsPlaying(false);
       } else {
         if (audioRef.current.currentTime === 0) {
-          audioRef.current.currentTime = 2.1;
+          audioRef.current.currentTime = 23.5;
         }
         audioRef.current.play();
         setIsPlaying(true);
