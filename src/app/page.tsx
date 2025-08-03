@@ -11,7 +11,7 @@ interface TimeLeft {
 }
 
 export default function Home() {
-  const targetDate = new Date('2025-07-03T16:35:00');
+  const targetDate = new Date('2026-07-09T11:15:00');
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
@@ -94,10 +94,10 @@ export default function Home() {
           
           {/* Banner */}
           <div className="flex justify-center pt-8 px-8">
-            <div className="max-w-[700px] w-full">
+            <div className="max-w-[700px] w-full relative">
               <div 
                 onClick={toggleMusic}
-                className={`transform transition-transform duration-100 cursor-pointer ${isPumping ? 'scale-105' : ''}`}
+                className={`transform transition-transform duration-100 cursor-pointer relative ${isPumping ? 'scale-105' : ''}`}
               >
                 <Image
                   src="/banner.png"
@@ -109,8 +109,17 @@ export default function Home() {
                   style={{
                     maxWidth: '100%',
                     height: 'auto',
+                    filter: 'grayscale(50%) brightness(0.7)',
                   }}
                 />
+                {/* COMING SOON Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="transform -rotate-12">
+                    <h1 className="text-6xl md:text-8xl font-bold text-white tracking-wider uppercase text-center drop-shadow-lg">
+                      Coming Soon
+                    </h1>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
