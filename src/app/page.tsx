@@ -115,7 +115,7 @@ export default function Home() {
                 {/* COMING SOON Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="transform -rotate-12">
-                    <h1 className="text-6xl md:text-8xl font-bold text-white tracking-wider uppercase text-center drop-shadow-lg">
+                    <h1 className="text-6xl md:text-[8rem] font-black text-white tracking-wider uppercase text-center drop-shadow-lg">
                       Coming Soon
                     </h1>
                   </div>
