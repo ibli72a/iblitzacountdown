@@ -10,8 +10,9 @@ interface TimeLeft {
   seconds: number;
 }
 
+const TARGET_DATE = new Date('2026-07-09T11:15:00');
+
 export default function Home() {
-  const targetDate = new Date('2026-07-09T11:15:00');
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
@@ -21,7 +22,7 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPumping, setIsPumping] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const beatIntervalRef = useRef<NodeJS.Timeout>();
+  const beatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const toggleMusic = () => {
     if (audioRef.current) {
@@ -46,26 +47,30 @@ export default function Home() {
         setIsPumping(true);
         setTimeout(() => setIsPumping(false), 100);
       }, beatInterval);
-
-      return () => {
-        if (beatIntervalRef.current) clearInterval(beatIntervalRef.current);
-        setIsPumping(false); // Ensure pumping stops when music stops
-      };
     }
+
+    return () => {
+      if (beatIntervalRef.current) {
+        clearInterval(beatIntervalRef.current);
+        beatIntervalRef.current = null;
+      }
+      setIsPumping(false); // Ensure pumping stops when music stops
+    };
   }, [isPlaying]);
 
   // Countdown timer
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const difference = +targetDate - +new Date();
-      if (difference > 0) {
-        setTimeLeft({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60)
-        });
-      }
+      const now = new Date();
+      const difference = TARGET_DATE.getTime() - now.getTime();
+      const clampedDifference = Math.max(difference, 0);
+
+      setTimeLeft({
+        days: Math.floor(clampedDifference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((clampedDifference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((clampedDifference / 1000 / 60) % 60),
+        seconds: Math.floor((clampedDifference / 1000) % 60)
+      });
     };
 
     calculateTimeLeft();
@@ -74,8 +79,8 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen relative">
-      <audio ref={audioRef} loop>
+    <main className="min-h-dvh relative">
+      <audio ref={audioRef} loop playsInline>
         <source src="/music.mp3" type="audio/mpeg" />
       </audio>
 
@@ -88,7 +93,15 @@ export default function Home() {
       />
 
       {/* Content Container */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-12 md:px-20">
+      <div
+        className="relative z-10 min-h-dvh flex flex-col items-center justify-center px-6 sm:px-12 md:px-20 py-12"
+        style={{
+          paddingTop: 'max(3rem, calc(env(safe-area-inset-top, 0px) + 2rem))',
+          paddingBottom: 'max(3rem, calc(env(safe-area-inset-bottom, 0px) + 2rem))',
+          paddingLeft: 'max(1.5rem, calc(env(safe-area-inset-left, 0px) + 1.5rem))',
+          paddingRight: 'max(1.5rem, calc(env(safe-area-inset-right, 0px) + 1.5rem))',
+        }}
+      >
         <div className="bg-black/35 rounded-3xl w-full max-w-4xl border border-white/10">
           <div className="absolute inset-0 bg-gradient-to-br from-[#ff8a00] to-[#ee489a] opacity-5 rounded-3xl pointer-events-none" />
           

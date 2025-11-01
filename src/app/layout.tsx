@@ -7,6 +7,13 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'IBLITZA Countdown',
   description: 'Countdown to IBLITZA 2026',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    viewportFit: 'cover',
+  },
+  themeColor: '#000000',
 }
 
 export default function RootLayout({
