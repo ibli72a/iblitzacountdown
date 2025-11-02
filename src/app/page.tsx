@@ -79,22 +79,14 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-dvh relative">
+    <main className="relative full-viewport overflow-hidden">
       <audio ref={audioRef} loop playsInline>
         <source src="/music.mp3" type="audio/mpeg" />
       </audio>
 
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center z-0"
-        style={{
-          backgroundImage: 'url("/ibiza-background.jpg")',
-        }}
-      />
-
       {/* Content Container */}
       <div
-        className="relative z-10 min-h-dvh flex flex-col items-center justify-center px-6 sm:px-12 md:px-20 py-12"
+        className="relative z-10 full-viewport flex flex-col items-center justify-center px-6 sm:px-12 md:px-20 py-12"
         style={{
           paddingTop: 'max(3rem, calc(env(safe-area-inset-top, 0px) + 2rem))',
           paddingBottom: 'max(3rem, calc(env(safe-area-inset-bottom, 0px) + 2rem))',
@@ -102,7 +94,7 @@ export default function Home() {
           paddingRight: 'max(1.5rem, calc(env(safe-area-inset-right, 0px) + 1.5rem))',
         }}
       >
-        <div className="bg-black/35 rounded-3xl w-full max-w-4xl border border-white/10">
+        <div className="relative bg-black/35 rounded-3xl w-full max-w-4xl border border-white/10">
           <div className="absolute inset-0 bg-gradient-to-br from-[#ff8a00] to-[#ee489a] opacity-5 rounded-3xl pointer-events-none" />
           
           {/* Banner */}

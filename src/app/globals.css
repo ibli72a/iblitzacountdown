@@ -29,6 +29,19 @@ body {
   min-height: 100dvh;
 }
 
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image: url('/ibiza-background.jpg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  transform: translateZ(0);
+}
+
 body::after {
   content: '';
   position: fixed;
@@ -41,6 +54,17 @@ body::after {
   opacity: 0.9;
   z-index: -1;
   animation: iblitzGradientShift 20s ease-in-out infinite;
+}
+
+.full-viewport {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+@supports (height: 100svh) {
+  .full-viewport {
+    min-height: 100svh;
+  }
 }
 
 .iblitz-noise {
