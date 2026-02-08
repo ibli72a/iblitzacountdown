@@ -85,62 +85,51 @@ export default function Home() {
       </audio>
 
       {/* Content Container */}
-      <div
-        className="relative z-10 full-viewport flex flex-col items-center justify-center px-6 sm:px-12 md:px-20 py-12"
-        style={{
-          paddingTop: 'max(3rem, calc(env(safe-area-inset-top, 0px) + 2rem))',
-          paddingBottom: 'max(3rem, calc(env(safe-area-inset-bottom, 0px) + 2rem))',
-          paddingLeft: 'max(1.5rem, calc(env(safe-area-inset-left, 0px) + 1.5rem))',
-          paddingRight: 'max(1.5rem, calc(env(safe-area-inset-right, 0px) + 1.5rem))',
-        }}
-      >
-        <div className="relative bg-black/35 rounded-3xl w-full max-w-4xl border border-white/10">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#ff8a00] to-[#ee489a] opacity-5 rounded-3xl pointer-events-none" />
-          
-          {/* Banner */}
-          <div className="flex justify-center pt-8 px-8">
-            <div className="max-w-[700px] w-full relative">
-              <div 
-                onClick={toggleMusic}
-                className={`transform transition-transform duration-100 cursor-pointer relative ${isPumping ? 'scale-105' : ''}`}
-              >
-                <Image
-                  src="/banner.png"
-                  alt="Event Banner"
-                  width={3280}
-                  height={1416}
-                  className="w-full h-auto [filter:drop-shadow(2px_0_0_white)_drop-shadow(-2px_0_0_white)_drop-shadow(0_2px_0_white)_drop-shadow(0_-2px_0_white)]"
-                  priority
-                  style={{
-                    maxWidth: '100%',
-                    height: 'auto',
-                    filter: 'grayscale(50%) brightness(0.7)',
-                  }}
-                />
-                {/* COMING SOON Overlay */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="transform -rotate-12">
-                    <h1 className="text-6xl md:text-[8rem] font-black text-white tracking-wider uppercase text-center drop-shadow-lg">
-                      Coming Soon
-                    </h1>
-                  </div>
+      <div className="relative z-10 full-viewport flex flex-col items-center justify-center p-4 sm:px-12 md:px-20">
+        <div className={`relative glass-card w-full max-w-2xl landscape:max-w-4xl transition-all duration-100 ${isPumping ? 'scale-[1.02] shadow-pump' : 'scale-100'}`}>
+          <div className="glass-shine" />
+          <div className={`absolute inset-0 bg-gradient-to-br from-[#ff8a00]/10 via-transparent to-[#ee489a]/10 rounded-[2rem] pointer-events-none transition-opacity duration-100 ${isPumping ? 'opacity-100' : 'opacity-70'}`} />
+
+          <div className="flex flex-col landscape:flex-row landscape:items-center landscape:gap-4 sm:landscape:gap-8">
+            {/* Banner */}
+            <div className="flex justify-center items-center px-6 landscape:p-6 landscape:flex-1 relative z-10">
+              <div className="max-w-[720px] landscape:max-w-xs w-full relative">
+                <div
+                  onClick={toggleMusic}
+                  className={`transform transition-all duration-100 cursor-pointer relative ${isPumping ? 'scale-110' : 'scale-100'} hover:scale-102`}
+                >
+                  <Image
+                    src="/banner.png"
+                    alt="Event Banner"
+                    width={3280}
+                    height={1416}
+                    className={`w-full h-auto transition-all duration-100 ${isPumping ? 'brightness-110' : 'brightness-100'}`}
+                    priority
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                      filter: `brightness(${isPumping ? '1.15' : '1.0'})`,
+                    }}
+                  />
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Countdown Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 p-8">
+            {/* Countdown Grid */}
+            <div className="flex items-center justify-center landscape:flex-1 relative z-10 px-6 pb-4 landscape:p-6">
+              <div className="grid grid-cols-2 landscape:grid-cols-2 md:grid-cols-4 gap-4 landscape:gap-2 sm:landscape:gap-4">
             {['Days', 'Hours', 'Minutes', 'Seconds'].map((unit) => (
-              <div key={unit} className="flex flex-col items-center">
-                <span className="text-5xl md:text-7xl font-bold text-white tracking-tight">
+              <div key={unit} className={`flex flex-col items-center glass-time-unit transition-all duration-100 ${isPumping ? 'scale-105' : 'scale-100'}`}>
+                <span className={`text-6xl font-bold text-white tracking-tight time-number transition-all duration-100 ${isPumping ? 'pump-glow' : ''}`}>
                   {String(timeLeft[unit.toLowerCase() as keyof TimeLeft]).padStart(2, '0')}
                 </span>
-                <span className="text-xs md:text-sm uppercase tracking-widest mt-2 text-gray-200">
+                <span className="text-sm uppercase tracking-widest mt-2 text-white/70 font-medium">
                   {unit}
                 </span>
               </div>
             ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
