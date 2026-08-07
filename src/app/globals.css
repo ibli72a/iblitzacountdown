@@ -2,326 +2,203 @@
 @tailwind components;
 @tailwind utilities;
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
 :root {
+  color-scheme: light;
+  --stone: #f5f1ea;
+  --ink: #002559;
+  --night: #00142f;
+
+  --paper: var(--stone);
+  --fg: var(--ink);
+  --soft: rgba(0, 37, 89, 0.6);
+  --rule: rgba(0, 37, 89, 0.16);
+  --accent: oklch(0.57 0.13 66);
+  --veil0: rgba(245, 241, 234, 0);
+  --veil1: #f5f1ea;
+  --photo: 0.2;
+  --pfilter: saturate(0.88);
+}
+
+:root[data-theme='night'] {
   color-scheme: dark;
-  --iblitz-gradient-1: #ff8a00;
-  --iblitz-gradient-2: #ee489a;
-  --iblitz-gradient-3: #4e1fff;
-  --iblitz-background: #05040a;
+  --paper: var(--night);
+  --fg: var(--stone);
+  --soft: rgba(245, 241, 234, 0.62);
+  --rule: rgba(245, 241, 234, 0.2);
+  --accent: oklch(0.78 0.12 220);
+  --veil0: rgba(0, 20, 47, 0);
+  --veil1: #00142f;
+  --photo: 0.15;
+  --pfilter: brightness(0.45) saturate(0.6) hue-rotate(-10deg);
 }
 
-html {
-  height: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
-}
-
-body {
+html, body {
   margin: 0;
   padding: 0;
-  background-color: var(--iblitz-background);
-  min-height: 100vh;
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--fg);
+}
+
+body { font-family: var(--font-archivo), system-ui, sans-serif; }
+
+a { color: var(--fg); text-decoration: none; }
+
+@keyframes sonar {
+  0%   { transform: scale(1);    opacity: 0.95; }
+  100% { transform: scale(1.62); opacity: 0; }
+}
+
+/* ---- layout ------------------------------------------------------------ */
+
+.screen {
+  position: relative;
   min-height: 100dvh;
-  position: relative;
-  width: 100%;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
-  z-index: -2;
-  pointer-events: none;
-  background-image: url('/ibiza-background.jpg');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-body::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
-  pointer-events: none;
-  background-image: radial-gradient(circle at 20% 20%, rgba(255, 138, 0, 0.15), transparent 55%),
-    radial-gradient(circle at 80% 30%, rgba(78, 31, 255, 0.15), transparent 50%),
-    radial-gradient(circle at 50% 80%, rgba(238, 72, 154, 0.17), transparent 60%);
-  filter: blur(32px);
-  opacity: 0.9;
-  z-index: -1;
-  animation: iblitzGradientShift 20s ease-in-out infinite;
-}
-
-.full-viewport {
-  height: 100vh;
-  height: 100dvh;
-  width: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-@supports (height: 100dvh) {
-  .full-viewport {
-    height: 100dvh;
-  }
-}
-
-.iblitz-noise {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 140 140"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="1" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="140" height="140" filter="url(%23noise)" opacity="0.25"/%3E%3C/svg%3E');
-  mix-blend-mode: soft-light;
-  opacity: 0.35;
-}
-
-.iblitz-orb {
-  position: absolute;
-  width: 32rem;
-  height: 32rem;
-  background: radial-gradient(circle, rgba(238, 72, 154, 0.55) 0%, transparent 70%);
-  filter: blur(60px);
-  opacity: 0.75;
-  animation: iblitzOrbFloat 18s ease-in-out infinite;
-}
-
-.iblitz-orb--secondary {
-  background: radial-gradient(circle, rgba(78, 31, 255, 0.45) 0%, transparent 70%);
-  animation-duration: 22s;
-  animation-delay: -6s;
-}
-
-.iblitz-orb--tertiary {
-  background: radial-gradient(circle, rgba(255, 138, 0, 0.45) 0%, transparent 70%);
-  animation-duration: 26s;
-  animation-delay: -10s;
-}
-
-.iblitz-glass {
-  backdrop-filter: blur(24px) saturate(125%);
-  background: linear-gradient(135deg, rgba(8, 8, 12, 0.78), rgba(12, 10, 20, 0.35));
-}
-
-.iblitz-glow {
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(255, 138, 0, 0.35), rgba(238, 72, 154, 0.35), rgba(78, 31, 255, 0.45));
-  opacity: 0.45;
-  filter: blur(18px);
-  pointer-events: none;
-  mix-blend-mode: lighten;
-}
-
-.iblitz-shimmer {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 22px 28px 34px;
+  padding-top: max(22px, env(safe-area-inset-top));
+  padding-bottom: max(34px, env(safe-area-inset-bottom));
   overflow: hidden;
 }
 
-.iblitz-shimmer::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent 10%, rgba(255, 255, 255, 0.14) 45%, transparent 55%);
-  transform: translateX(-100%);
-  animation: iblitzShimmer 6s ease-in-out infinite;
+.photo, .veil, .veilX { position: absolute; inset: 0; pointer-events: none; }
+
+.photo {
+  background: url('/mykonos-beach.jpg') center / cover no-repeat;
+  background-position: 58% center;
+  opacity: var(--photo);
+  filter: var(--pfilter);
 }
 
-.iblitz-badge {
-  display: inline-flex;
+.veil  { background: linear-gradient(180deg, var(--veil1) 0%, var(--veil0) 42%, var(--veil1) 78%); }
+.veilX { background: none; }
+
+.strip {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.85rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.15em;
+  gap: 12px;
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--soft);
+}
+
+.wx { display: inline-flex; align-items: center; gap: 6px; }
+
+.stage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.coinWrap { position: relative; width: 300px; height: 300px; max-width: 76vw; aspect-ratio: 1; cursor: pointer; flex-shrink: 0; }
+.disc { position: absolute; inset: 1.5%; border-radius: 999px; background: var(--stone); pointer-events: none; }
+/* "sonarRing" not "ring": Tailwind's `ring` utility would paint a blue box-shadow on these */
+.sonarRing { position: absolute; inset: 0; border-radius: 999px; border: 2.5px solid var(--accent); opacity: 0; pointer-events: none; }
+.coin { position: relative; width: 100%; height: 100%; }
+.coin img { width: 100%; height: auto; display: block; }
+
+.readout { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.date { font-family: var(--font-mono), monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--soft); }
+.hair { height: 1px; width: 72px; background: var(--rule); }
+
+.bigRow { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.big {
+  font-family: var(--font-cinzel), serif;
+  font-weight: 700;
+  font-size: clamp(76px, 26vw, 112px);
+  line-height: 0.86;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.bigLabel { font-family: var(--font-mono), monospace; font-size: 11px; letter-spacing: 0.28em; color: var(--soft); }
+
+.hms {
+  font-family: var(--font-cinzel), serif;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.line {
+  margin: 0;
+  max-width: 272px;
+  text-align: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  line-height: 2;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  color: var(--soft);
+  text-wrap: pretty;
+}
+
+.foot { position: relative; display: flex; flex-direction: column; gap: 18px; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.stats > div { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 12px 0; }
+.stats > div + div { border-left: 1px solid var(--rule); }
+.statN { font-family: var(--font-cinzel), serif; font-weight: 600; font-size: 22px; }
+.statL { font-family: var(--font-mono), monospace; font-size: 8px; letter-spacing: 0.18em; color: var(--soft); }
+
+.share {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
+  background: var(--fg);
+  color: var(--paper);
+  font-family: var(--font-mono), monospace;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.24em;
 }
 
-/* iOS Glass Card Styles */
-.glass-card {
-  position: relative;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  border-radius: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow:
-    0 8px 32px 0 rgba(0, 0, 0, 0.37),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  overflow: hidden;
-  animation: glassBreath 8s ease-in-out infinite;
-}
+/* ---- desktop: the seal and the number sit side by side ----------------- */
 
-.glass-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3) 30%,
-    rgba(255, 255, 255, 0.3) 70%,
-    transparent
-  );
-  opacity: 0.6;
-}
+@media (min-width: 900px) {
+  .screen { padding: 40px 72px 44px; }
+  .photo { background-position: 58% 46%; }
+  .veil  { background: linear-gradient(180deg, var(--veil1) 0%, var(--veil0) 40%, var(--veil1) 90%); }
+  .veilX { background: linear-gradient(90deg, var(--veil0) 26%, var(--veil1) 62%); }
 
-.glass-shine {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.15) 0%,
-    transparent 40%,
-    transparent 60%,
-    rgba(255, 255, 255, 0.08) 100%
-  );
-  pointer-events: none;
-  mix-blend-mode: overlay;
-  z-index: 1;
-}
+  .strip { font-size: 10px; letter-spacing: 0.18em; }
+  .stage { flex-direction: row; justify-content: center; gap: 92px; }
 
-.glass-time-unit {
-  padding: 1.5rem 2rem;
-  border-radius: 1.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+  .coinWrap { width: 420px; height: 420px; max-width: none; }
+  .readout { width: auto; align-items: flex-start; gap: 14px; }
+  .hair { width: 88px; }
+  .date { font-size: 11px; letter-spacing: 0.24em; }
 
-.glass-time-unit:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
+  .bigRow { flex-direction: row; align-items: baseline; gap: 22px; }
+  .big { font-size: clamp(120px, 13vw, 188px); line-height: 0.82; letter-spacing: -0.03em; }
+  .bigLabel { font-size: 13px; letter-spacing: 0.3em; }
+  .hms { font-size: 26px; }
+  .line { max-width: 400px; text-align: left; font-size: 12px; line-height: 2.1; margin-top: 6px; }
 
-.time-number {
-  text-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.3),
-    0 0 20px rgba(255, 255, 255, 0.1),
-    0 1px 0 rgba(255, 255, 255, 0.2);
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
-}
-
-.pump-glow {
-  text-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.4),
-    0 0 30px rgba(255, 138, 0, 0.6),
-    0 0 40px rgba(238, 72, 154, 0.4),
-    0 0 50px rgba(255, 255, 255, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.3);
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.2));
-}
-
-.shadow-pump {
-  box-shadow:
-    0 12px 48px 0 rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.25),
-    0 0 0 1px rgba(255, 255, 255, 0.12),
-    0 0 80px rgba(255, 138, 0, 0.2),
-    0 0 100px rgba(238, 72, 154, 0.15);
-}
-
-.glass-title {
-  color: #ffffff;
-  text-shadow:
-    0 0 30px rgba(255, 255, 255, 0.8),
-    0 0 60px rgba(255, 138, 0, 0.4),
-    0 0 90px rgba(238, 72, 154, 0.3),
-    0 4px 20px rgba(0, 0, 0, 0.9),
-    0 2px 4px rgba(0, 0, 0, 1),
-    0 8px 16px rgba(0, 0, 0, 0.6),
-    0 1px 2px rgba(255, 255, 255, 0.5);
-  filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.7));
-  position: relative;
-  -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.3);
-}
-
-.pump-title-glow {
-  text-shadow:
-    0 0 50px rgba(255, 255, 255, 1),
-    0 0 80px rgba(255, 138, 0, 0.7),
-    0 0 120px rgba(238, 72, 154, 0.6),
-    0 0 160px rgba(78, 31, 255, 0.4),
-    0 4px 20px rgba(0, 0, 0, 0.9),
-    0 2px 4px rgba(0, 0, 0, 1),
-    0 8px 16px rgba(0, 0, 0, 0.6),
-    0 1px 2px rgba(255, 255, 255, 0.7);
-  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.8));
-}
-
-@keyframes iblitzGradientShift {
-  0% {
-    transform: scale(1) translate3d(0, 0, 0);
-  }
-  50% {
-    transform: scale(1.08) translate3d(2%, -1%, 0);
-  }
-  100% {
-    transform: scale(1) translate3d(0, 0, 0);
-  }
-}
-
-@keyframes iblitzOrbFloat {
-  0%, 100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(6%, -4%, 0) scale(1.08);
-  }
-}
-
-@keyframes iblitzShimmer {
-  0% {
-    transform: translateX(-120%);
-  }
-  50% {
-    transform: translateX(120%);
-  }
-  100% {
-    transform: translateX(120%);
-  }
-}
-
-@keyframes glassBreath {
-  0%, 100% {
-    box-shadow:
-      0 8px 32px 0 rgba(0, 0, 0, 0.37),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
-      0 0 0 1px rgba(255, 255, 255, 0.05);
-  }
-  50% {
-    box-shadow:
-      0 12px 40px 0 rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
-      0 0 0 1px rgba(255, 255, 255, 0.08),
-      0 0 60px rgba(255, 138, 0, 0.1);
-  }
+  .foot { flex-direction: row; align-items: center; justify-content: space-between; gap: 40px; border-top: 1px solid var(--rule); padding-top: 22px; }
+  .stats { display: flex; gap: 56px; border: 0; }
+  .stats > div { flex-direction: row; align-items: baseline; gap: 10px; padding: 0; }
+  .stats > div + div { border: 0; }
+  .statN { font-size: 26px; }
+  .statL { font-size: 9px; letter-spacing: 0.2em; }
+  .share { height: 48px; padding: 0 46px; }
 }
