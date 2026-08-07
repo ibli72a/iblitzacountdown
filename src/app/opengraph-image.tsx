@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { pad, split } from './countdown';
+import { split } from './countdown';
 
 export const dynamic = 'force-static';
 export const alt = 'Countdown to Mykonos 2027';
@@ -64,12 +64,8 @@ export default async function Image() {
 
           <div style={{ display: 'flex', height: 1, background: 'rgba(245,241,234,0.22)' }} />
 
-          <div style={{ display: 'flex', gap: 15, fontSize: 17, letterSpacing: 2, color: 'rgba(245,241,234,0.74)' }}>
-            <span>{pad(t.hours)} HOURS</span>
-            <span>·</span>
-            <span>{pad(t.minutes)} MINUTES</span>
-            <span>·</span>
-            <span>{pad(t.seconds)} SECONDS</span>
+          <div style={{ display: 'flex', fontSize: 17, letterSpacing: 4, color: 'rgba(245,241,234,0.74)' }}>
+            8 JULY 2027 · 06:00
           </div>
         </div>
 
