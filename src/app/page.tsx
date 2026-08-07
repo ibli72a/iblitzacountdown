@@ -174,9 +174,9 @@ export default function Home() {
       <section className="stage">
         <div className="coinWrap" onClick={toggle} role="button" aria-label="Play the track" tabIndex={0}>
           <div className="disc" />
-          <div className="ring" style={ringStyle(0)} />
-          <div className="ring" style={ringStyle(1)} />
-          <div className="ring" style={ringStyle(2)} />
+          <div className="sonarRing" style={ringStyle(0)} />
+          <div className="sonarRing" style={ringStyle(1)} />
+          <div className="sonarRing" style={ringStyle(2)} />
           <div ref={seal} className="coin">
             <Image src="/seal.png" alt="Mykonos by IBLITZA" width={1254} height={1254} priority />
           </div>
