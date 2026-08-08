@@ -30,8 +30,8 @@
   --accent: oklch(0.78 0.12 220);
   --veil0: rgba(0, 20, 47, 0);
   --veil1: #00142f;
-  --photo: 0.15;
-  --pfilter: brightness(0.45) saturate(0.6) hue-rotate(-10deg);
+  --photo: 0.25;
+  --pfilter: brightness(0.55) saturate(0.6) hue-rotate(-10deg);
 }
 
 html, body {
