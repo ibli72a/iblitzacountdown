@@ -68,6 +68,10 @@ function WeatherIcon({ name }: { name: string }) {
 
 export default function Home() {
   const [t, setT] = useState(() => split());
+  // React leaves suppressHydrationWarning text as baked at build, and later ticks only
+  // rewrite nodes whose value changed — so the days/hours figures can stay hours stale.
+  // Flipping this key remounts the readout and rewrites every node from the client clock.
+  const [hydrated, setHydrated] = useState(false);
   const [island, setIsland] = useState<Island>({ temp: null, sky: '···', key: 'clear', sunrise: null, sunset: null });
   const [night, setNight] = useState(false);
   const [playing, setPlaying] = useState(false);
@@ -76,6 +80,7 @@ export default function Home() {
   const seal = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    setHydrated(true);
     const id = setInterval(() => setT(split()), 1000);
     return () => clearInterval(id);
   }, []);
@@ -182,11 +187,10 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="readout">
+        <div className="readout" key={hydrated ? 'live' : 'baked'}>
           <div className="date">8 JULY 2027 · 06:00</div>
           <div className="hair" />
           <div className="bigRow">
-            {/* The baked-at-build numbers differ from the client's clock; the 1s tick corrects them right after hydration. */}
             <span className="big" suppressHydrationWarning>{t.days}</span>
             <span className="bigLabel">DAYS</span>
           </div>
@@ -195,7 +199,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="foot">
+      <footer className="foot" key={hydrated ? 'live' : 'baked'}>
         <div className="stats">
           <div><span className="statN" suppressHydrationWarning>{Math.floor(t.days / 7)}</span><span className="statL">WEEKS</span></div>
           <div><span className="statN" suppressHydrationWarning>{Math.floor(t.days / 30.44)}</span><span className="statL">MONTHS</span></div>
