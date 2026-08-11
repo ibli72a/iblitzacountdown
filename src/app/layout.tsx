@@ -1,23 +1,29 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Cinzel, Archivo, JetBrains_Mono } from 'next/font/google';
+import { split } from './countdown';
 
 const cinzel = Cinzel({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-cinzel' });
 const archivo = Archivo({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-archivo' });
 const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' });
 
+// Baked at build; the daily rebuild keeps the shared-link caption on today's count.
+const days = split().days;
+const caption = days === 0 ? 'Today. 06:00. Go.' : `${days} ${days === 1 ? 'day' : 'days'} to go`;
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://countdown.iblitza.com'),
   title: 'Mykonos 2027 — IBLITZA Countdown',
-  // No descriptions: the share caption stays two lines — title + domain — under the card image.
+  description: caption,
   openGraph: {
     title: 'Countdown to MYKONOS 2027',
+    description: caption,
     url: 'https://countdown.iblitza.com',
     siteName: 'IBLITZA',
     locale: 'en_US',
     type: 'website',
   },
-  twitter: { card: 'summary_large_image', title: 'Countdown to MYKONOS 2027' },
+  twitter: { card: 'summary_large_image', title: 'Countdown to MYKONOS 2027', description: caption },
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
