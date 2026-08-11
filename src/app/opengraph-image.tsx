@@ -1,10 +1,10 @@
 import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { split } from './countdown';
+import { milestone, split } from './countdown';
 
 export const dynamic = 'force-static';
-export const alt = 'Countdown to Mykonos 2027';
+export const alt = 'Countdown to MYKONOS 2027';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -63,6 +63,10 @@ export default async function Image() {
           </div>
 
           <div style={{ display: 'flex', height: 1, background: 'rgba(245,241,234,0.22)' }} />
+
+          <div style={{ display: 'flex', fontSize: 20, letterSpacing: 3, textTransform: 'uppercase', color: STONE }}>
+            {milestone(t.days)}
+          </div>
 
           <div style={{ display: 'flex', fontSize: 17, letterSpacing: 4, color: 'rgba(245,241,234,0.74)' }}>
             8 JULY 2027 · 06:00
