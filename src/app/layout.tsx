@@ -9,16 +9,15 @@ const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variab
 export const metadata: Metadata = {
   metadataBase: new URL('https://countdown.iblitza.com'),
   title: 'Mykonos 2027 — IBLITZA Countdown',
-  description: 'Countdown to Mykonos 2027',
+  // No descriptions: the share caption stays two lines — title + domain — under the card image.
   openGraph: {
-    title: 'Mykonos 2027',
-    description: 'Countdown to Mykonos 2027',
+    title: 'Countdown to Mykonos 2027',
     url: 'https://countdown.iblitza.com',
     siteName: 'IBLITZA',
     locale: 'en_US',
     type: 'website',
   },
-  twitter: { card: 'summary_large_image', title: 'Mykonos 2027', description: 'Countdown to Mykonos 2027' },
+  twitter: { card: 'summary_large_image', title: 'Countdown to Mykonos 2027' },
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
