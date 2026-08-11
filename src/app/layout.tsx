@@ -11,13 +11,13 @@ export const metadata: Metadata = {
   title: 'Mykonos 2027 — IBLITZA Countdown',
   // No descriptions: the share caption stays two lines — title + domain — under the card image.
   openGraph: {
-    title: 'Countdown to Mykonos 2027',
+    title: 'Countdown to MYKONOS 2027',
     url: 'https://countdown.iblitza.com',
     siteName: 'IBLITZA',
     locale: 'en_US',
     type: 'website',
   },
-  twitter: { card: 'summary_large_image', title: 'Countdown to Mykonos 2027' },
+  twitter: { card: 'summary_large_image', title: 'Countdown to MYKONOS 2027' },
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },

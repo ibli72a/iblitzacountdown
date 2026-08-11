@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { milestone, split } from './countdown';
 
 export const dynamic = 'force-static';
-export const alt = 'Countdown to Mykonos 2027';
+export const alt = 'Countdown to MYKONOS 2027';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
