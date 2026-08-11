@@ -148,8 +148,9 @@ export default function Home() {
 
   const line = milestone(t.days);
   const stamp = new Date().toISOString().slice(0, 10);
+  // Bare link only: WhatsApp still renders the preview card, and the card itself is the tap target.
   const share = `https://wa.me/?text=${encodeURIComponent(
-    `Countdown to Mykonos 2027 https://countdown.iblitza.com/?d=${stamp}`
+    `https://countdown.iblitza.com/?d=${stamp}`
   )}`;
   const icon = island.key === 'clear' ? (night ? 'moon' : 'sun') : island.key;
   const ringStyle = (i: number) => ({
