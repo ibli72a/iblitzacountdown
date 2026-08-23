@@ -1,15 +1,16 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Cinzel, Archivo, JetBrains_Mono } from 'next/font/google';
-import { split } from './countdown';
+import { milestone, split } from './countdown';
 
 const cinzel = Cinzel({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-cinzel' });
 const archivo = Archivo({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-archivo' });
 const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' });
 
-// Baked at build; the daily rebuild keeps the shared-link caption on today's count.
+// Baked at build; the daily rebuild keeps the shared-link caption on today's count and tagline.
 const days = split().days;
-const caption = days === 0 ? 'Today. 06:00. Go.' : `${days} ${days === 1 ? 'day' : 'days'} to go`;
+const line = milestone(days);
+const caption = days === 0 ? line : `${days} ${days === 1 ? 'day' : 'days'} to go\n${line}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://countdown.iblitza.com'),
