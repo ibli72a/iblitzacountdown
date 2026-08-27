@@ -3,9 +3,13 @@ name: Deploy
 on:
   push:
     branches: [main]
-  # The OG image is baked at build time, so rebuild daily to keep the day count honest.
+  # The OG card and caption are baked at build time. The day count flips at 04:00 UTC
+  # (06:00 CEST, the departure time), so the rebuild must land AFTER that — GitHub runs
+  # cron late (up to ~1h), and a build seconds before the flip bakes a count that is
+  # wrong for the whole following day. The extra runs re-bake the same number as
+  # insurance: GitHub silently skips scheduled runs sometimes.
   schedule:
-    - cron: '10 3 * * *'
+    - cron: '15 4,10,16 * * *'
   workflow_dispatch:
 
 permissions:
