@@ -35,6 +35,14 @@ export function milestone(days: number): string {
   return BY_30[i] ?? (BY_30[BY_30.length - 1] as string);
 }
 
+// The share caption: count on the first line, milestone on the second.
+// On the day itself the two collapse into the single milestone line.
+export function caption(days: number): string {
+  const line = milestone(days);
+  if (days === 0) return line;
+  return `${days} ${days === 1 ? 'day' : 'days'} to go\n${line}`;
+}
+
 export function split(now: number = Date.now()) {
   const diff = Math.max(TARGET.getTime() - now, 0);
   return {

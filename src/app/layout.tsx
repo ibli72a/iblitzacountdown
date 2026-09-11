@@ -1,30 +1,29 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Cinzel, Archivo, JetBrains_Mono } from 'next/font/google';
-import { milestone, split } from './countdown';
+import { caption, split } from './countdown';
 
 const cinzel = Cinzel({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-cinzel' });
 const archivo = Archivo({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-archivo' });
 const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' });
 
-// Baked at build; the daily rebuild keeps the shared-link caption on today's count and tagline.
-const days = split().days;
-const line = milestone(days);
-const caption = days === 0 ? line : `${days} ${days === 1 ? 'day' : 'days'} to go\n${line}`;
+// Only the bare domain falls back to this build-time caption; /d/<days> overrides it
+// with the count from the URL, which is what the site's own share button links to.
+const line = caption(split().days);
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://countdown.iblitza.com'),
   title: 'Mykonos 2027 — IBLITZA Countdown',
-  description: caption,
+  description: line,
   openGraph: {
     title: 'Countdown to MYKONOS 2027',
-    description: caption,
+    description: line,
     url: 'https://countdown.iblitza.com',
     siteName: 'IBLITZA',
     locale: 'en_US',
     type: 'website',
   },
-  twitter: { card: 'summary_large_image', title: 'Countdown to MYKONOS 2027', description: caption },
+  twitter: { card: 'summary_large_image', title: 'Countdown to MYKONOS 2027', description: line },
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
