@@ -147,11 +147,12 @@ export default function Home() {
   }, [playing]);
 
   const line = milestone(t.days);
-  // The stamp is the day count itself, so the share URL — WhatsApp's preview-cache key —
-  // changes exactly when the baked number does, never before and never after.
+  // The day count is the path, so the preview WhatsApp scrapes is baked into the
+  // link itself: it can't drift from the live number while a rebuild is pending,
+  // and it doubles as the cache key, which changes exactly when the count does.
   // Bare link only: WhatsApp still renders the preview card, and the card itself is the tap target.
   const share = `https://wa.me/?text=${encodeURIComponent(
-    `https://countdown.iblitza.com/?d=${t.days}`
+    `https://countdown.iblitza.com/d/${t.days}/`
   )}`;
   const icon = island.key === 'clear' ? (night ? 'moon' : 'sun') : island.key;
   const ringStyle = (i: number) => ({
