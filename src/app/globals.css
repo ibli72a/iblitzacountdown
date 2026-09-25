@@ -100,7 +100,8 @@ a { color: var(--fg); text-decoration: none; }
   gap: 20px;
 }
 
-.coinWrap { position: relative; width: 300px; height: 300px; max-width: 76vw; aspect-ratio: 1; cursor: pointer; flex-shrink: 0; }
+/* width and height share one min() so the box stays square when 76vw < 300px (narrow Androids) */
+.coinWrap { position: relative; width: min(300px, 76vw); height: min(300px, 76vw); cursor: pointer; flex-shrink: 0; }
 .disc { position: absolute; inset: 1.5%; border-radius: 999px; background: var(--stone); pointer-events: none; }
 /* "sonarRing" not "ring": Tailwind's `ring` utility would paint a blue box-shadow on these */
 .sonarRing { position: absolute; inset: 0; border-radius: 999px; border: 2.5px solid var(--accent); opacity: 0; pointer-events: none; }
@@ -183,7 +184,7 @@ a { color: var(--fg); text-decoration: none; }
   .strip { font-size: 10px; letter-spacing: 0.18em; }
   .stage { flex-direction: row; justify-content: center; gap: 92px; }
 
-  .coinWrap { width: 420px; height: 420px; max-width: none; }
+  .coinWrap { width: 420px; height: 420px; }
   .readout { width: auto; align-items: flex-start; gap: 14px; }
   .hair { width: 88px; }
   .date { font-size: 11px; letter-spacing: 0.24em; }
