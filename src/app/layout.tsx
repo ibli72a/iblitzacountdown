@@ -1,11 +1,39 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
-import { Cinzel, Archivo, JetBrains_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
 import { caption, split } from './countdown';
 
-const cinzel = Cinzel({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-cinzel' });
-const archivo = Archivo({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-archivo' });
-const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' });
+// Fonts ship in the repo (latin subset, from Fontsource) rather than via next/font/google:
+// fetching them from Google at build time made the scheduled deploys fail intermittently.
+const cinzel = localFont({
+  src: [
+    { path: './fonts/cinzel-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/cinzel-latin-500-normal.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/cinzel-latin-600-normal.woff2', weight: '600', style: 'normal' },
+    { path: './fonts/cinzel-latin-700-normal.woff2', weight: '700', style: 'normal' },
+  ],
+  variable: '--font-cinzel',
+  display: 'swap',
+  fallback: ['serif'],
+});
+const archivo = localFont({
+  src: [
+    { path: './fonts/archivo-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/archivo-latin-500-normal.woff2', weight: '500', style: 'normal' },
+  ],
+  variable: '--font-archivo',
+  display: 'swap',
+  fallback: ['system-ui', 'sans-serif'],
+});
+const mono = localFont({
+  src: [
+    { path: './fonts/jetbrains-mono-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/jetbrains-mono-latin-500-normal.woff2', weight: '500', style: 'normal' },
+  ],
+  variable: '--font-mono',
+  display: 'swap',
+  fallback: ['monospace'],
+});
 
 // Only the bare domain falls back to this build-time caption; /d/<days> overrides it
 // with the count from the URL, which is what the site's own share button links to.

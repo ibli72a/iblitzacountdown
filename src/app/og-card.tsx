@@ -12,7 +12,7 @@ const NIGHT = '#00142f';
 // satori has no oklch() support — this is oklch(0.78 0.12 220) as sRGB hex
 const ACCENT = '#4ac9ec';
 
-// One card is rendered per remaining day, so the seal and the fonts are fetched
+// One card is rendered per remaining day, so the seal and the fonts are read
 // once per build and reused — not once per card.
 let sealOnce: Promise<string> | undefined;
 function seal() {
@@ -22,26 +22,17 @@ function seal() {
   return sealOnce;
 }
 
-async function fetchCinzel(weight: number) {
-  const css = await fetch(
-    `https://fonts.googleapis.com/css2?family=Cinzel:wght@${weight}`,
-    { headers: { 'User-Agent': 'Mozilla/5.0' } }
-  ).then((r) => r.text());
-  const url = css.match(/src: url\((.+?)\) format/)?.[1];
-  if (!url) throw new Error('Cinzel not found');
-  return fetch(url).then((r) => r.arrayBuffer());
+// satori reads woff but not woff2, so the card gets its own copies of the two weights it uses.
+function cinzel(weight: 600 | 700) {
+  return readFile(join(process.cwd(), 'src', 'app', 'fonts', `cinzel-latin-${weight}-normal.woff`));
 }
 
 async function buildFonts() {
-  try {
-    const [bold, semi] = await Promise.all([fetchCinzel(700), fetchCinzel(600)]);
-    return [
-      { name: 'Cinzel', data: bold, weight: 700 as const, style: 'normal' as const },
-      { name: 'Cinzel', data: semi, weight: 600 as const, style: 'normal' as const },
-    ];
-  } catch {
-    return undefined; // fall back to the built-in face rather than failing the build
-  }
+  const [bold, semi] = await Promise.all([cinzel(700), cinzel(600)]);
+  return [
+    { name: 'Cinzel', data: bold, weight: 700 as const, style: 'normal' as const },
+    { name: 'Cinzel', data: semi, weight: 600 as const, style: 'normal' as const },
+  ];
 }
 
 let fontsOnce: ReturnType<typeof buildFonts> | undefined;
