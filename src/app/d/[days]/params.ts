@@ -1,11 +1,13 @@
 import { split } from '../../countdown';
 
-// One page per possible remaining day, 0 .. today's count. The client only ever
-// links to its own live count, which can never exceed the count at build time,
-// so every link the site hands out is guaranteed to have been generated.
-// The list shrinks by one a day.
+// Share links went out from this date, with the day count in the URL. A link stays in
+// chats long after the count has moved on, so every count since then keeps its page:
+// building only 0 .. today's count made each shared link 404 a day or so later.
+const FIRST_SHARE = Date.parse('2026-09-11T00:00:00Z');
+
+// One page per count a share link can carry, 0 .. the count on FIRST_SHARE.
 export function generateStaticParams() {
-  const max = split().days;
+  const max = Math.max(split(FIRST_SHARE).days, split().days);
   return Array.from({ length: max + 1 }, (_, i) => ({ days: String(i) }));
 }
 
