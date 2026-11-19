@@ -101,7 +101,8 @@ a { color: var(--fg); text-decoration: none; }
 }
 
 /* width and height share one min() so the box stays square when 76vw < 300px (narrow Androids) */
-.coinWrap { position: relative; width: min(300px, 76vw); height: min(300px, 76vw); cursor: pointer; flex-shrink: 0; }
+.coinWrap { position: relative; width: min(300px, 76vw); height: min(300px, 76vw); cursor: pointer; flex-shrink: 0; border-radius: 999px; outline: none; }
+.coinWrap:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 4px; }
 .disc { position: absolute; inset: 1.5%; border-radius: 999px; background: var(--stone); pointer-events: none; }
 /* "sonarRing" not "ring": Tailwind's `ring` utility would paint a blue box-shadow on these */
 .sonarRing { position: absolute; inset: 0; border-radius: 999px; border: 2.5px solid var(--accent); opacity: 0; pointer-events: none; }

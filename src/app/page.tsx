@@ -116,6 +116,8 @@ export default function Home() {
     const isNight = rise === null || set === null ? now < 390 || now >= 1250 : now < rise || now > set;
     setNight(isNight);
     document.documentElement.dataset.theme = isNight ? 'night' : 'day';
+    // The static theme-color is the day paper; keep the browser chrome in step at night.
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isNight ? '#00142f' : '#f5f1ea');
   }, [island, t.minutes]);
 
   useEffect(() => {
@@ -143,8 +145,15 @@ export default function Home() {
     const el = audio.current;
     if (!el) return;
     if (playing) { el.pause(); setPlaying(false); }
-    else { void el.play(); setPlaying(true); }
+    // play() rejects when the browser blocks it or the file fails to load: only pulse if it started.
+    else { el.play().then(() => setPlaying(true)).catch(() => setPlaying(false)); }
   }, [playing]);
+
+  const onKey = useCallback((e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    toggle();
+  }, [toggle]);
 
   const line = milestone(t.days);
   // The day count is the path, so the preview WhatsApp scrapes is baked into the
@@ -165,7 +174,8 @@ export default function Home() {
 
   return (
     <main className="screen">
-      <audio ref={audio} loop playsInline src="/music.mp3" />
+      {/* 5 MB track: fetch it on the first tap, not on page load */}
+      <audio ref={audio} loop playsInline preload="none" src="/music.mp3" />
 
       <div className="photo" />
       <div className="veil" />
@@ -180,13 +190,14 @@ export default function Home() {
       </header>
 
       <section className="stage">
-        <div className="coinWrap" onClick={toggle} role="button" aria-label="Play the track" tabIndex={0}>
+        <div className="coinWrap" onClick={toggle} onKeyDown={onKey} role="button" aria-label="Play the track" aria-pressed={playing} tabIndex={0}>
           <div className="disc" />
           <div className="sonarRing" style={ringStyle(0)} />
           <div className="sonarRing" style={ringStyle(1)} />
           <div className="sonarRing" style={ringStyle(2)} />
           <div ref={seal} className="coin">
-            <Image src="/seal.png" alt="Mykonos by IBLITZA" width={1254} height={1254} priority />
+            {/* 840px WebP (2x the largest display size); seal.png stays as the source for the OG card */}
+            <Image src="/seal.webp" alt="Mykonos by IBLITZA" width={840} height={840} priority />
           </div>
         </div>
 
