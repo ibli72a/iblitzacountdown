@@ -4,13 +4,13 @@ All SVGs are self-contained (lettering is outlined, no fonts needed), so they ex
 
 | File | Use |
 | --- | --- |
-| `iblitza-avatar.svg` / `iblitza-avatar-1024.png` | GitHub org / social avatar (square, reads at 40px) |
-| `iblitza-avatar-light.svg` | Same mark on stone |
-| `iblitza-seal.svg`, `iblitza-seal-night.svg` | Round seal with Greek-key border |
-| `iblitza-icon.svg` | Seal on a navy square |
-| `iblitza-lockup.svg`, `iblitza-lockup-night.svg` | Seal + wordmark (night version is for dark backgrounds) |
-| `iblitza-wordmark.svg` | Wordmark only |
+| `iblitza-avatar.svg` / `iblitza-avatar-1024.png` | Profile picture (GitHub org, Slack…): lime square, safe for round or rounded crops |
+| `iblitza-avatar-dark.svg` | Same on a dark background |
+| `iblitza-badge.svg` | Lime disc with the wordmark breaking out of it, transparent background |
+| `iblitza-wordmark.svg` | Wordmark only, sunset gradient, transparent |
+| `iblitza-wordmark-ink.svg`, `iblitza-wordmark-white.svg` | One-colour wordmarks |
 
-Colours: navy `#002559`, stone `#f5f1ea`, gold `#b8862f`. Lettering: Cinzel Bold.
+Colours: lime `#d3ee5f`, orange `#ff9a0a`, pink `#ff3ea5`, ink `#1b1030`.
+Lettering: Barlow Semi Condensed ExtraBold Italic (SIL Open Font License, see `OFL-Barlow.txt`).
 
-Regenerate with `pip install fonttools brotli && python3 brand/make_logo.py .` from the repo root.
+Regenerate with `pip install fonttools brotli && python3 brand/make_logo.py`.
