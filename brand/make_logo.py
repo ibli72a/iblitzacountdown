@@ -28,7 +28,7 @@ FONT = TTFont(ARGS.font)
 
 BLUE = '#0b5cad'                     # lettering: Mediterranean blue
 SUN = '#ffb21f'                      # the sun disc
-GREENS = ['#0b7a3b', '#13a84b', '#5fcf6e']   # palm, flat: back, middle and front fronds
+GREENS = ['#0b7a3b', '#13a84b', '#5fcf6e']   # palm, flat: dark, mid, light
 WHITE = '#ffffff'                    # background
 
 
@@ -150,11 +150,12 @@ def frond(x, y, L, a0, bend, W, teeth=4):
 
 # (angle from upright, curl, length, half-width, shade), back to front: two fronds arching
 # up and over, two long ones spreading out, two drooping lower, two short ones hanging close.
+# Shades (0 dark, 1 mid, 2 light) are mixed, not mirrored, and neighbours always differ.
 FRONDS = [
-    (-12, -100, 0.92, .17, 0), (14, 100, 0.90, .17, 0),
-    (-58, -80, 1.00, .17, 1), (62, 80, 1.00, .17, 1),
-    (-95, -55, 0.82, .16, 2), (98, 55, 0.84, .16, 2),
-    (-135, -25, 0.50, .14, 1), (138, 25, 0.50, .14, 1),
+    (-12, -100, 0.92, .17, 1), (14, 100, 0.90, .17, 2),
+    (-58, -80, 1.00, .17, 0), (62, 80, 1.00, .17, 1),
+    (-95, -55, 0.82, .16, 2), (98, 55, 0.84, .16, 0),
+    (-135, -25, 0.50, .14, 1), (138, 25, 0.50, .14, 2),
 ]
 
 
