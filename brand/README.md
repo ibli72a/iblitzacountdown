@@ -8,6 +8,9 @@ All SVGs are self-contained (lettering is outlined, no fonts needed), so they ex
 | `iblitza-avatar-dark.svg` | Same on a dark background |
 | `iblitza-badge.svg` | Lime disc with the wordmark breaking out of it, transparent background |
 | `iblitza-wordmark.svg` | Wordmark only, sunset gradient, transparent |
+| `iblitza-avatar-black-on-white.svg`, `iblitza-avatar-white-on-black.svg` (+ `-1024.png`) | Black & white square avatars |
+| `iblitza-wordmark-black-on-white.svg`, `iblitza-wordmark-white-on-black.svg` | Black & white wordmarks on a solid background |
+| `iblitza-wordmark-black.svg` | Pure black wordmark, transparent |
 | `iblitza-wordmark-ink.svg`, `iblitza-wordmark-white.svg` | One-colour wordmarks |
 
 Colours: lime `#d3ee5f`, orange `#ff9a0a`, pink `#ff3ea5`, ink `#1b1030`.

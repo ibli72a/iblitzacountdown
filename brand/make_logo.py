@@ -93,6 +93,15 @@ for name, col in [('ink', INK), ('white', '#ffffff')]:
     d1, b1 = mark(1000, 540, 300, grad=col, accent_top=col, accent_bottom=col)
     files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 520, '', b1)
 
+# Black & white: square avatars and wide wordmarks, each on a solid background.
+for name, fg, bg in [('black-on-white', '#000000', '#ffffff'), ('white-on-black', '#ffffff', '#000000')]:
+    _, b1 = mark(820, 512, 512, grad=fg, accent_top=fg, accent_bottom=fg)
+    files[f'iblitza-avatar-{name}.svg'] = svg(1024, 1024, '', f'<rect width="1024" height="1024" fill="{bg}"/>{b1}')
+    _, b1 = mark(1000, 540, 300, grad=fg, accent_top=fg, accent_bottom=fg)
+    files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 520, '', f'<rect width="1080" height="520" fill="{bg}"/>{b1}')
+_, b1 = mark(1000, 540, 300, grad='#000000', accent_top='#000000', accent_bottom='#000000')
+files['iblitza-wordmark-black.svg'] = svg(1080, 520, '', b1)
+
 for n, s in files.items():
     with open(os.path.join(HERE, n), 'w') as fh:
         fh.write(s)
