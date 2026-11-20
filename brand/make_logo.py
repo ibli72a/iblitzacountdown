@@ -1,7 +1,11 @@
 """Generate the IBLITZA logo set as self-contained SVGs (lettering outlined, no fonts needed).
 
 The I is a palm tree: the letter is the trunk, with a few wavy rings cut into it, and a crown
-of fronds sits on top of it.
+of fronds sits on top of it. The word sits across a warm sun disc and breaks out of it.
+
+Colour: blue lettering, green palm, yellow-orange sun. One colour: the sun is solid ink and
+whatever of the word and palm falls on it is knocked out to the paper colour, so the mark
+holds up printed in black only (or white only on a dark ground).
 
     pip install fonttools brotli skia-pathops
     python3 brand/make_logo.py                       # default font, files written to brand/
@@ -17,13 +21,15 @@ from fontTools.pens.basePen import BasePen
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ap = argparse.ArgumentParser()
-ap.add_argument('--font', default=os.path.join(HERE, 'righteous-latin-400-normal.woff2'))
+ap.add_argument('--font', default=os.path.join(HERE, 'galindo-latin-400-normal.woff2'))
 ap.add_argument('--out', default=HERE)
 ARGS = ap.parse_args()
 FONT = TTFont(ARGS.font)
 
-LIME, ORANGE, PINK, INK = '#d3ee5f', '#ff9a0a', '#ff3ea5', '#1b1030'
-FROND = ['#0b7d36', '#0fae4b']   # back and front fronds
+BLUE = '#0b5cad'                     # lettering: Mediterranean blue
+SUN = ('#ffd23f', '#ff9a1f')         # the sun disc, top to bottom
+FROND = ['#0b7d36', '#13a84b']       # back and front fronds
+SAND = '#fff4e2'                     # background for the square avatar
 
 
 # ---- lettering ---------------------------------------------------------------------------
@@ -87,7 +93,7 @@ def _rings(x0, x1, y0, y1, n=4, thick=0.035, amp=0.025):
 
 
 def wordmark(width, cx, baseline, text='IBLITZA', gap=0.045):
-    """Outline `text` scaled to `width`, centred on cx. Returns (path, box, first-glyph box).
+    """Outline `text` scaled to `width`, centred on cx. Returns (pathops path, box, I's box).
     Each gap is measured where two neighbours come closest and made the same for every pair.
     The I (first letter) gets palm-trunk rings cut into it."""
     gs, cmap, upm = FONT.getGlyphSet(), FONT.getBestCmap(), FONT['head'].unitsPerEm
@@ -99,22 +105,20 @@ def wordmark(width, cx, baseline, text='IBLITZA', gap=0.045):
         a, b = profs[i], profs[i + 1]
         closest = min(b[y][0] + adv[i] - a[y][1] for y in a if y in b)
         X.append(X[i] + adv[i] + gap * upm - closest)
-    total = X[-1] + adv[-1]
-    s = width / total
-    x0 = cx - width / 2
-    final = (s, 0, 0, -s, x0, baseline)
-    pen, allb, first = SVGPathPen(None, ntos=lambda v: f'{v:.2f}'), BoundsPen(None), BoundsPen(None)
+    s = width / (X[-1] + adv[-1])
+    final = (s, 0, 0, -s, cx - width / 2, baseline)
+    word, first = pathops.Path(), BoundsPen(None)
     for i, n in enumerate(names):
         g = pathops.Path()
         gs[n].draw(TransformPen(g.getPen(), (1, 0, 0, 1, X[i], 0)))
         if i == 0:
             bp = BoundsPen(None); g.draw(bp)
-            gx0, gy0, gx1, gy1 = bp.bounds
             g.draw(TransformPen(first, final))       # the crown sits on the I as drawn
-            g = pathops.op(g, _rings(gx0, gx1, gy0, gy1), pathops.PathOp.DIFFERENCE)
-        for p in (pen, allb):
-            g.draw(TransformPen(p, final))
-    return pen.getCommands(), allb.bounds, first.bounds
+            g = pathops.op(g, _rings(*bp.bounds), pathops.PathOp.DIFFERENCE)
+        placed = pathops.Path()
+        g.draw(TransformPen(placed.getPen(), final))
+        word = pathops.op(word, placed, pathops.PathOp.UNION)
+    return word, word.bounds, first.bounds
 
 
 # ---- palm crown --------------------------------------------------------------------------
@@ -154,77 +158,121 @@ FRONDS = [
 ]
 
 
-def palm(x0, x1, y, cap, fill, line):
-    """Palm crown on top of the I (its top edge runs x0..x1 at height y). `fill` None draws
-    it in two greens; a colour draws every frond in that colour, separated by `line` (the
-    background) if given."""
-    hx, hy = (x0 + x1) / 2, y + cap * 0.02
-    L = cap * 0.78
-    sw = L * 0.016
-    parts = []
-    for a, b, l, w, shade in FRONDS:
-        poly = frond(hx, hy, L * l, a, b, L * w)
-        d = 'M' + ' L'.join(f'{u:.1f},{v:.1f}' for u, v in poly) + 'Z'
-        if fill is None:
-            parts.append(f'<path d="{d}" fill="{FROND[shade]}"/>')
-        elif line:
-            parts.append(f'<path d="{d}" fill="{fill}" stroke="{line}" stroke-width="{sw:.1f}" stroke-linejoin="round"/>')
-        else:
-            parts.append(f'<path d="{d}" fill="{fill}"/>')
-    return '<g>' + ''.join(parts) + '</g>'
+def _poly(points):
+    p = pathops.Path(); pen = p.getPen()
+    pen.moveTo(points[0])
+    for q in points[1:]:
+        pen.lineTo(q)
+    pen.closePath()
+    return p
+
+
+def palm(x0, x1, y, cap):
+    """The crown's fronds as (pathops path, shade), back to front, sitting on top of the I
+    (whose top edge runs x0..x1 at height y)."""
+    hx, hy, L = (x0 + x1) / 2, y + cap * 0.02, cap * 0.78
+    return [(_poly(frond(hx, hy, L * l, a, b, L * w)), shade) for a, b, l, w, shade in FRONDS]
 
 
 # ---- composition -------------------------------------------------------------------------
 
-def _mark(text_width, cx, cy, grad, accent, line):
-    _, (bx0, by0, bx1, by1), _ = wordmark(text_width, cx, 0)
-    cap = by1 - by0
-    path, (bx0, by0, bx1, by1), (ix0, iy0, ix1, iy1) = wordmark(text_width, cx, cy + cap / 2)
-    plant = palm(ix0, ix1, iy0, cap, accent, line)
-    pts = [tuple(map(float, m)) for m in re.findall(r'(-?[\d.]+),(-?[\d.]+)', plant)]
-    xs = [bx0, bx1] + [x for x, _ in pts]
-    ys = [by0, by1] + [y for _, y in pts]
-    # letters first, crown on top of the I
-    return f'<path d="{path}" fill="{grad}"/>' + plant, (min(xs), min(ys), max(xs), max(ys)), (by0, by1)
+def _d(path):
+    pen = SVGPathPen(None, ntos=lambda v: f'{v:.1f}')
+    path.draw(pen)
+    return pen.getCommands()
 
 
-def mark(width, cx, cy, grad='url(#sunset)', accent=None, line=None):
-    """Wordmark with the palm I, the whole thing `width` wide and centred on (cx, cy)."""
-    _, (x0, y0, x1, y1), _ = _mark(1000, 0, 0, grad, accent, line)
-    tw = 1000 * width / (x1 - x0)
-    body, (x0, y0, x1, y1), (by0, by1) = _mark(tw, cx, cy, grad, accent, line)
+def _translate(path, dx, dy):
+    out = pathops.Path()
+    path.draw(TransformPen(out.getPen(), (1, 0, 0, 1, dx, dy)))
+    return out
+
+
+def layout(width, cx, cy):
+    """Word + palm, scaled so the whole thing is `width` wide, centred on (cx, cy).
+    Returns (word path, [(frond path, shade)], cap height)."""
+    def build(tw):
+        word, (bx0, by0, bx1, by1), _ = wordmark(tw, 0, 0)
+        cap = by1 - by0
+        word, (bx0, by0, bx1, by1), (ix0, iy0, ix1, iy1) = wordmark(tw, 0, cap / 2)
+        fronds = palm(ix0, ix1, iy0, cap)
+        x0 = min([bx0] + [f.bounds[0] for f, _ in fronds]); x1 = max([bx1] + [f.bounds[2] for f, _ in fronds])
+        y0 = min([by0] + [f.bounds[1] for f, _ in fronds]); y1 = max([by1] + [f.bounds[3] for f, _ in fronds])
+        return word, fronds, cap, (x0, y0, x1, y1)
+    *_, (x0, y0, x1, y1) = build(1000)
+    word, fronds, cap, (x0, y0, x1, y1) = build(1000 * width / (x1 - x0))
     dx, dy = cx - (x0 + x1) / 2, cy - (y0 + y1) / 2
-    body = f'<g transform="translate({dx:.1f} {dy:.1f})">{body}</g>'
-    defs = (f'<linearGradient id="sunset" gradientUnits="userSpaceOnUse" x1="0" y1="{by0:.1f}" x2="0" y2="{by1:.1f}">'
-            f'<stop offset="0.12" stop-color="{ORANGE}"/><stop offset="0.9" stop-color="{PINK}"/></linearGradient>')
-    return defs, body
+    return _translate(word, dx, dy), [(_translate(f, dx, dy), s) for f, s in fronds], cap
 
 
-def svg(w, h, defs, body):
+def disc(cx, cy, r, n=180):
+    return _poly([(cx + r * math.cos(2 * math.pi * k / n), cy + r * math.sin(2 * math.pi * k / n)) for k in range(n)])
+
+
+def colour(word, fronds, sun=None):
+    """Full colour: optional sun disc (cx, cy, r), blue word, palm in two greens."""
+    out, defs = [], ''
+    if sun:
+        cx, cy, r = sun
+        defs = (f'<linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">'
+                f'<stop offset="0" stop-color="{SUN[0]}"/><stop offset="1" stop-color="{SUN[1]}"/></linearGradient>')
+        out.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="url(#sun)"/>')
+    out.append(f'<path d="{_d(word)}" fill="{BLUE}"/>')
+    out += [f'<path d="{_d(f)}" fill="{FROND[s]}"/>' for f, s in fronds]
+    return defs, ''.join(out)
+
+
+def mono(word, fronds, cap, ink, paper=None, sun=None):
+    """One colour. Fronds are split by thin `paper` lines when a paper colour is given.
+    With a sun disc, the parts of the word and palm that fall on it are knocked out: drawn
+    in the paper colour with ink lines between the fronds."""
+    sw = cap * 0.03
+    line = lambda c: f' stroke="{c}" stroke-width="{sw:.1f}" stroke-linejoin="round"' if c else ''
+    out = [f'<path d="{_d(word)}" fill="{ink}"/>']
+    out += [f'<path d="{_d(f)}" fill="{ink}"{line(paper)}/>' for f, _ in fronds]
+    if sun:
+        D = disc(*sun)
+        out.insert(0, f'<circle cx="{sun[0]}" cy="{sun[1]}" r="{sun[2]}" fill="{ink}"/>')
+        out.append(f'<path d="{_d(pathops.op(word, D, pathops.PathOp.INTERSECTION))}" fill="{paper}"/>')
+        for f, _ in fronds:
+            inside = pathops.op(f, D, pathops.PathOp.INTERSECTION)
+            out.append(f'<path d="{_d(inside)}" fill="{paper}"{line(ink)}/>')
+    return ''.join(out)
+
+
+def svg(w, h, body, defs='', bg=None):
+    back = f'<rect width="{w}" height="{h}" fill="{bg}"/>' if bg else ''
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}">\n'
-            f'  <title>IBLITZA</title>\n  <defs>{defs}</defs>\n  {body}\n</svg>\n')
+            f'  <title>IBLITZA</title>\n  <defs>{defs}</defs>\n  {back}{body}\n</svg>\n')
 
 
 files = {}
-# Badge, as on Instagram: lime disc with the wordmark breaking out of it. Transparent corners.
-d, b = mark(940, 560, 500)
-files['iblitza-badge.svg'] = svg(1120, 1000, d, f'<circle cx="560" cy="500" r="440" fill="{LIME}"/>{b}')
-# Avatar: full-bleed lime square, everything inside the safe area (GitHub/Slack crop corners).
-d, b = mark(800, 512, 512)
-files['iblitza-avatar.svg'] = svg(1024, 1024, d, f'<rect width="1024" height="1024" fill="{LIME}"/>{b}')
-files['iblitza-avatar-dark.svg'] = svg(1024, 1024, d, f'<rect width="1024" height="1024" fill="{INK}"/>{b}')
-# Wordmark only, transparent: gradient, and single-colour versions for print / one-colour use.
-d, b = mark(960, 540, 340)
-files['iblitza-wordmark.svg'] = svg(1080, 680, d, b)
-for name, col in [('ink', INK), ('white', '#ffffff'), ('black', '#000000')]:
-    _, b1 = mark(960, 540, 340, grad=col, accent=col)
-    files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 680, '', b1)
-# Black & white: square avatars and wide wordmarks, each on a solid background.
-for name, fg, bg in [('black-on-white', '#000000', '#ffffff'), ('white-on-black', '#ffffff', '#000000')]:
-    _, b1 = mark(800, 512, 512, grad=fg, accent=fg, line=bg)
-    files[f'iblitza-avatar-{name}.svg'] = svg(1024, 1024, '', f'<rect width="1024" height="1024" fill="{bg}"/>{b1}')
-    _, b1 = mark(960, 540, 340, grad=fg, accent=fg, line=bg)
-    files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 680, '', f'<rect width="1080" height="680" fill="{bg}"/>{b1}')
+BW = [('black-on-white', '#000000', '#ffffff'), ('white-on-black', '#ffffff', '#000000')]
+
+# Badge: the word across a sun disc, breaking out of it on both sides. Transparent corners.
+sun = (560, 500, 400)
+word, fronds, cap = layout(1000, 560, 500)
+d, b = colour(word, fronds, sun)
+files['iblitza-badge.svg'] = svg(1120, 1000, b, d)
+for name, ink, paper in BW:
+    files[f'iblitza-badge-{name}.svg'] = svg(1120, 1000, mono(word, fronds, cap, ink, paper, sun), bg=paper)
+
+# Avatar: the badge on a full square (GitHub/Slack crop the corners), kept inside the safe area.
+sun = (512, 512, 360)
+word, fronds, cap = layout(860, 512, 512)
+d, b = colour(word, fronds, sun)
+files['iblitza-avatar.svg'] = svg(1024, 1024, b, d, bg=SAND)
+for name, ink, paper in BW:
+    files[f'iblitza-avatar-{name}.svg'] = svg(1024, 1024, mono(word, fronds, cap, ink, paper, sun), bg=paper)
+
+# Wordmark only (no sun), transparent and on solid grounds.
+word, fronds, cap = layout(960, 540, 340)
+d, b = colour(word, fronds)
+files['iblitza-wordmark.svg'] = svg(1080, 680, b, d)
+for name, ink in [('black', '#000000'), ('white', '#ffffff'), ('blue', BLUE)]:
+    files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 680, mono(word, fronds, cap, ink))
+for name, ink, paper in BW:
+    files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 680, mono(word, fronds, cap, ink, paper), bg=paper)
 
 os.makedirs(ARGS.out, exist_ok=True)
 for n, s in files.items():
