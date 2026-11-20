@@ -62,17 +62,34 @@ def wordmark(width, cx, baseline, text='IBLITZA', gap=0.03):
     """Outline `text` scaled to `width`, centred on cx. Returns (path, box, first-glyph box).
 
     Spacing: each gap is measured where the two slanted letters come closest, and made the
-    same for every pair (the font's own spacing makes T-Z read wider than L-I-T)."""
+    same for every pair (the font's own spacing makes T-Z read wider than L-I-T).
+
+    Z-A: the end of Z's foot is re-angled to run parallel to A's left leg, pivoting on its
+    bottom corner, so the foot keeps its full length and the gap stays even all the way up."""
     gs, cmap, upm = FONT.getGlyphSet(), FONT.getBestCmap(), FONT['head'].unitsPerEm
     names = [cmap[ord(c)] for c in text]
     adv = [gs[n].width for n in names]
     k = SLANT * STRETCH - ITALIC     # extra shear, in font units of x per unit of y
     profs = [_profile(gs, n, k) for n in names]
-    X = [0.0]
+    X, cut, cut_i = [0.0], None, None
     for i in range(len(names) - 1):
         a, b = profs[i], profs[i + 1]
         closest = min(b[y][0] + adv[i] - a[y][1] for y in a if y in b)
         X.append(X[i] + adv[i] + gap * upm - closest)
+        if text[i:i + 2] == 'ZA':
+            cap_h = FONT['OS/2'].sCapHeight
+            # A's left leg as a line x = m*y + c (layout units), fitted on its lower part
+            pts = [(y, b[y][0] + X[i + 1]) for y in b if cap_h * 0.02 < y < cap_h * 0.35]
+            my = sum(y for y, _ in pts) / len(pts); mx = sum(x for _, x in pts) / len(pts)
+            m = sum((y - my) * (x - mx) for y, x in pts) / sum((y - my) ** 2 for y, _ in pts)
+            # ... moved left onto the bottom corner of Z's foot
+            y0 = min(y for y in a if y > 2)
+            c = (a[y0][1] + X[i]) - m * y0
+            lo, hi = -2000, cap_h + 2000
+            cut = pathops.Path(); pen_ = cut.getPen()
+            pen_.moveTo((-1e5, lo)); pen_.lineTo((m * lo + c, lo)); pen_.lineTo((m * hi + c, hi))
+            pen_.lineTo((-1e5, hi)); pen_.closePath()
+            cut_i = i
     total = X[-1] + adv[-1]
     s = width / total
     x0 = cx - width / 2
@@ -81,6 +98,8 @@ def wordmark(width, cx, baseline, text='IBLITZA', gap=0.03):
     for i, n in enumerate(names):
         g = pathops.Path()
         gs[n].draw(TransformPen(g.getPen(), (1, 0, k, 1, X[i], 0)))
+        if i == cut_i:
+            g = pathops.op(g, cut, pathops.PathOp.INTERSECTION)
         for p in (pen, allb) + ((first,) if i == 0 else ()):
             g.draw(TransformPen(p, final))
     return pen.getCommands(), allb.bounds, first.bounds
