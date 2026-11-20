@@ -3,7 +3,7 @@
 The I is a palm tree: the letter is the trunk, with a few wavy rings cut into it, and a crown
 of fronds sits on top of it. The word sits across a warm sun disc and breaks out of it.
 
-Colour (flat, on white): blue lettering, palm in three greens, warm orange-yellow sun. One colour: the sun is solid ink and
+Colour (flat, on white): blue lettering, palm in two greens, warm orange-yellow sun. One colour: the sun is solid ink and
 whatever of the word and palm falls on it is knocked out to the paper colour, so the mark
 holds up printed in black only (or white only on a dark ground).
 
@@ -28,7 +28,7 @@ FONT = TTFont(ARGS.font)
 
 BLUE = '#0b5cad'                     # lettering: Mediterranean blue
 SUN = '#ffb21f'                      # the sun disc
-GREENS = ['#0b7a3b', '#13a84b', '#5fcf6e']   # palm, flat: dark, mid, light
+GREENS = ['#13a84b', '#5fcf6e']     # palm, flat: mid, light
 WHITE = '#ffffff'                    # background
 
 
@@ -150,12 +150,12 @@ def frond(x, y, L, a0, bend, W, teeth=4):
 
 # (angle from upright, curl, length, half-width, shade), back to front: two fronds arching
 # up and over, two long ones spreading out, two drooping lower, two short ones hanging close.
-# Shades (0 dark, 1 mid, 2 light) are mixed, not mirrored, and neighbours always differ.
+# Two shades (0 mid, 1 light) alternate down each side, mirrored crosswise, so neighbours differ.
 FRONDS = [
-    (-12, -100, 0.92, .17, 1), (14, 100, 0.90, .17, 2),
-    (-58, -80, 1.00, .17, 0), (62, 80, 1.00, .17, 1),
-    (-95, -55, 0.82, .16, 2), (98, 55, 0.84, .16, 0),
-    (-135, -25, 0.50, .14, 1), (138, 25, 0.50, .14, 2),
+    (-12, -100, 0.92, .17, 0), (14, 100, 0.90, .17, 1),
+    (-58, -80, 1.00, .17, 1), (62, 80, 1.00, .17, 0),
+    (-95, -55, 0.82, .16, 0), (98, 55, 0.84, .16, 1),
+    (-135, -25, 0.50, .14, 1), (138, 25, 0.50, .14, 0),
 ]
 
 
@@ -211,7 +211,7 @@ def disc(cx, cy, r, n=180):
 
 
 def colour(word, fronds, cap, sun=None):
-    """Full colour, flat: optional sun disc (cx, cy, r), blue word, palm in three flat greens."""
+    """Full colour, flat: optional sun disc (cx, cy, r), blue word, palm in two flat greens."""
     out = []
     if sun:
         out.append(f'<circle cx="{sun[0]}" cy="{sun[1]}" r="{sun[2]}" fill="{SUN}"/>')
