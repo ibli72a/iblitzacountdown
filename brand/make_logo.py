@@ -12,7 +12,6 @@ from fontTools.pens.boundsPen import BoundsPen
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONT = TTFont(os.path.join(HERE, 'barlow-semi-condensed-latin-800-italic.woff2'))
 LIME, ORANGE, PINK, INK, GREEN = '#d3ee5f', '#ff9a0a', '#ff3ea5', '#1b1030', '#0fae4b'
-LEAF_LINE = '#8be89a'  # lighter green outline between the pineapple leaves
 SHEAR = 0.12  # extra slant on top of the font's own italic
 ITALIC = math.tan(math.radians(-FONT['post'].italicAngle))
 SLANT = ITALIC + SHEAR
@@ -112,60 +111,64 @@ def wordmark(width, cx, baseline, text='IBLITZA', gap=0.03):
     return pen.getCommands(), allb.bounds, first.bounds
 
 
-def blade(x, y, L, a0, bend, w0):
-    """One pineapple leaf as a closed polygon: it leaves (x, y) at angle a0 (degrees from
-    straight up, clockwise), curves by `bend` degrees (towards upright, so the tip turns up),
-    is broadest a little way out and tapers to a sharp point."""
+def leaf(x, y, L, a0, bend, W):
+    """One pineapple leaf as a closed polygon: a broad, pointed lance shape leaving (x, y) at
+    angle a0 (degrees from upright, clockwise) and curving by `bend` degrees along its length,
+    zero-width at both ends and widest about 40% of the way out."""
     n = 60
     pts, ang = [(x, y)], [math.radians(a0)]
     px, py = x, y
     for k in range(1, n + 1):
         t = k / n
-        th = math.radians(a0 + bend * t ** 1.4)
+        th = math.radians(a0 + bend * t * t)
         px += math.sin(th) * L / n
         py -= math.cos(th) * L / n
         pts.append((px, py)); ang.append(th)
     left, right = [], []
     for k, ((sx, sy), th) in enumerate(zip(pts, ang)):
         t = k / n
-        w = w0 * (0.55 + 0.45 * min(1, t * 3.5)) * (1 - t) ** 0.9
+        w = W * math.sin(math.pi * t ** 0.75) ** 0.85
         nx, ny = math.cos(th), math.sin(th)
         left.append((sx - nx * w, sy - ny * w)); right.append((sx + nx * w, sy + ny * w))
     return left + right[::-1]
 
 
+# Pineapple crown, back to front: (angle from upright, curl, length, shade, half-width).
+# Tall upright leaves at the back, a middle row opening out, short side leaves flaring, and a
+# cup of short, broad leaves in front. Shades run dark at the back to pale at the front.
+CROWN = [
+    (-4, -4, 1.00, 0, .12), (8, 6, 0.96, 1, .12),
+    (-16, -10, 0.86, 1, .12), (20, 12, 0.88, 0, .12),
+    (-30, -16, 0.74, 0, .115), (32, 16, 0.76, 1, .115),
+    (-42, -18, 0.58, 1, .11), (44, 18, 0.58, 0, .11),
+    (-14, -8, 0.58, 2, .13), (16, 8, 0.56, 2, .13),
+    (-32, -16, 0.40, 2, .12), (34, 16, 0.40, 2, .12),
+    (2, 2, 0.40, 3, .13),
+]
+SHADES = ['#0b7d36', '#0fae4b', '#2fc864', '#62dd8a']
+
+
 def palm(x0, x1, y, cap, fill, line):
-    """Pineapple crown on the I, after a small gap: a short base as wide as the I (same slant),
-    then tiers of broad, curving leaves, alternating left and right. Low tiers reach out wide
-    and turn their tips up; higher ones are shorter and more upright, with a few tall leaves
-    up the middle, so the outline is a flame. Higher leaves are drawn first, lower ones in
-    front of them, each with a `line` outline so the leaves read separately."""
-    gap, base_h, H = cap * 0.03, cap * 0.05, cap * 0.92
-    sx = lambda dy: dy * SLANT           # horizontal shift for a rise of dy, following the italic
-    yb, yt = y - gap, y - gap - base_h
-    base = [(x0 + sx(gap), yb), (x1 + sx(gap), yb), (x1 + sx(gap + base_h), yt), (x0 + sx(gap + base_h), yt)]
+    """Pineapple crown on the I, a small gap above it, its leaves gathered at the bottom into
+    a bunch as wide as the I. `fill` GREEN draws it in shades of green; any other colour draws
+    it in that colour with `line` (the background) separating the leaves, or as a plain
+    silhouette when `line` is None."""
+    gap, H = cap * 0.035, cap * 0.85
+    bx, by = (x0 + x1) / 2 + gap * SLANT, y - gap
     lean = math.degrees(math.atan(SLANT)) * 0.5
-    axis = lambda f: ((x0 + x1) / 2 + sx(gap + base_h) + f * H * math.tan(math.radians(lean)), yt - f * H)
-    W = H * 0.075
-    # (height up the crown 0..1, angle out from upright, curl back up, length): per side
-    tiers = [(0.00, 84, 34, 0.50), (0.10, 76, 34, 0.56), (0.23, 66, 34, 0.54), (0.37, 55, 30, 0.48),
-             (0.51, 43, 26, 0.41), (0.65, 30, 20, 0.33)]
-    leaves = []
-    for f, a, b, ln in tiers:
-        leaves.append((f, +a, -b, ln))           # right
-        leaves.append((f + 0.05, -a, +b, ln))    # left, a touch higher: tiers alternate
-    leaves += [(0.30, 12, -10, 0.60), (0.33, -14, 10, 0.56), (0.58, 4, -6, 0.42)]   # up the middle
-    leaves.sort(key=lambda r: -r[0])             # highest first, so lower leaves sit in front
-    sw = H * 0.012
+    sw = H * 0.014
     parts = []
-    for f, a, b, ln in leaves:
-        px, py = axis(f)
-        poly = blade(px, py, H * ln, a + lean, b, W)
-        parts.append('M' + ' L'.join(f'{u:.1f},{v:.1f}' for u, v in poly) + 'Z')
-    basepath = 'M' + ' L'.join(f'{u:.1f},{v:.1f}' for u, v in base) + 'Z'
-    stroke = f' stroke="{line}" stroke-width="{sw:.1f}" stroke-linejoin="round"' if line else ''
-    return (f'<g fill="{fill}"{stroke}>'
-            + ''.join(f'<path d="{d}"/>' for d in parts) + f'<path d="{basepath}"/></g>')
+    for a, b, l, shade, w in CROWN:
+        ox = bx + (x1 - x0) * 0.75 * math.sin(math.radians(a))
+        poly = leaf(ox, by, H * l, a + lean, b, H * w)
+        d = 'M' + ' L'.join(f'{u:.1f},{v:.1f}' for u, v in poly) + 'Z'
+        if fill == GREEN:
+            parts.append(f'<path d="{d}" fill="{SHADES[shade]}"/>')
+        elif line:
+            parts.append(f'<path d="{d}" fill="{fill}" stroke="{line}" stroke-width="{sw:.1f}" stroke-linejoin="round"/>')
+        else:
+            parts.append(f'<path d="{d}" fill="{fill}"/>')
+    return '<g>' + ''.join(parts) + '</g>'
 
 
 def _mark(text_width, cx, cy, grad, accent, line):
@@ -181,7 +184,7 @@ def _mark(text_width, cx, cy, grad, accent, line):
     return plant + f'<path d="{path}" fill="{grad}"/>', (min(xs), min(ys), max(xs), max(ys)), (by0, by1)
 
 
-def mark(width, cx, cy, grad='url(#sunset)', accent=GREEN, line=LEAF_LINE):
+def mark(width, cx, cy, grad='url(#sunset)', accent=GREEN, line=None):
     """Wordmark with the pineapple crown on the I, the whole thing `width` wide and centred on (cx, cy)."""
     _, (x0, y0, x1, y1), _ = _mark(1000, 0, 0, grad, accent, line)
     tw = 1000 * width / (x1 - x0)                       # text width that makes the total `width`
