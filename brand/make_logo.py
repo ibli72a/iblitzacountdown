@@ -236,8 +236,8 @@ def one_colour(word, fronds, cap):
     return pathops.op(shape, crown, pathops.PathOp.UNION)
 
 
-def svg(box, body, pad=0.04, square=False):
-    """SVG sized to `box` (x0, y0, x1, y1) plus padding, transparent ground."""
+def svg(box, body, pad=0.04, square=False, bg=None):
+    """SVG sized to `box` (x0, y0, x1, y1) plus padding; transparent unless `bg` is given."""
     x0, y0, x1, y1 = box
     w, h = x1 - x0, y1 - y0
     p = pad * max(w, h)
@@ -246,8 +246,10 @@ def svg(box, body, pad=0.04, square=False):
         x0 -= (side - w) / 2; y0 -= (side - h) / 2; w = h = side
     vb = f'{x0 - p:.1f} {y0 - p:.1f} {w + 2 * p:.1f} {h + 2 * p:.1f}'
     W, H = round(w + 2 * p), round(h + 2 * p)
+    back = (f'<rect x="{x0 - p:.1f}" y="{y0 - p:.1f}" width="{w + 2 * p:.1f}" height="{h + 2 * p:.1f}" fill="{bg}"/>'
+            if bg else '')
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}" width="{W}" height="{H}">\n'
-            f'  <title>IBLITZA</title>\n  {body}\n</svg>\n')
+            f'  <title>IBLITZA</title>\n  {back}{body}\n</svg>\n')
 
 
 files = {}
@@ -268,6 +270,10 @@ files['iblitza-wordmark.svg'] = svg(box, colour(word, fronds))
 for name, ink in INKS:
     files[f'iblitza-wordmark-{name}.svg'] = svg(box, f'<path d="{_d(mono)}" fill="{ink}"/>')
     files[f'iblitza-avatar-{name}.svg'] = svg(box, f'<path d="{_d(mono)}" fill="{ink}"/>', square=True)
+# ... and on a solid ground, for places that need one.
+for name, ink, bg in [('white-on-black', '#ffffff', '#000000'), ('black-on-white', '#000000', '#ffffff')]:
+    files[f'iblitza-wordmark-{name}.svg'] = svg(box, f'<path d="{_d(mono)}" fill="{ink}"/>', bg=bg)
+    files[f'iblitza-avatar-{name}.svg'] = svg(box, f'<path d="{_d(mono)}" fill="{ink}"/>', square=True, bg=bg)
 
 os.makedirs(ARGS.out, exist_ok=True)
 for n, s in files.items():

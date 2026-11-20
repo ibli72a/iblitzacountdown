@@ -4,7 +4,7 @@ The I is a palm tree: the letter is the trunk (with wavy rings cut into it) and 
 fronds sits on top. In the full logo the word is centred across a warm sun, its ends just
 breaking out on both sides.
 
-All files have a transparent background. The SVGs are self-contained (lettering is outlined, no
+All files have a transparent background, except the `-on-black` / `-on-white` ones. The SVGs are self-contained (lettering is outlined, no
 fonts needed), so they export to PNG at any size.
 
 | File | Use |
@@ -14,6 +14,8 @@ fonts needed), so they export to PNG at any size.
 | `iblitza-wordmark.svg` | Word + palm, no sun, colour |
 | `iblitza-wordmark-black.svg`, `iblitza-wordmark-white.svg` | Word + palm in one colour |
 | `iblitza-avatar-black.svg`, `iblitza-avatar-white.svg` (+ `-1024.png`) | Same, on a square canvas |
+| `iblitza-wordmark-white-on-black.svg`, `iblitza-wordmark-black-on-white.svg` | One colour on a solid ground |
+| `iblitza-avatar-white-on-black.svg`, `iblitza-avatar-black-on-white.svg` (+ `-1024.png`) | Same, square |
 
 **One colour:** no sun. The palm and the letters are one shape with real gaps between the fronds
 and between the crown and the letters, so they stay readable in a single ink on any ground.
