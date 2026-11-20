@@ -62,34 +62,17 @@ def wordmark(width, cx, baseline, text='IBLITZA', gap=0.03):
     """Outline `text` scaled to `width`, centred on cx. Returns (path, box, first-glyph box).
 
     Spacing: each gap is measured where the two slanted letters come closest, and made the
-    same for every pair (the font's own spacing makes T-Z read wider than L-I-T). Z's foot
-    would still interlock with A's leg, so it is trimmed parallel to that leg, one gap away."""
+    same for every pair (the font's own spacing makes T-Z read wider than L-I-T)."""
     gs, cmap, upm = FONT.getGlyphSet(), FONT.getBestCmap(), FONT['head'].unitsPerEm
-    cap_h = FONT['OS/2'].sCapHeight
     names = [cmap[ord(c)] for c in text]
     adv = [gs[n].width for n in names]
     k = SLANT * STRETCH - ITALIC     # extra shear, in font units of x per unit of y
-    G = gap * upm
     profs = [_profile(gs, n, k) for n in names]
-    X, cut = [0.0], None
+    X = [0.0]
     for i in range(len(names) - 1):
         a, b = profs[i], profs[i + 1]
-        ys = [y for y in a if y in b]
-        if text[i:i + 2] == 'ZA':
-            ys = [y for y in ys if y > cap_h * 0.25]   # leave Z's foot out: it gets trimmed
-        closest = min(b[y][0] + adv[i] - a[y][1] for y in ys)
-        X.append(X[i] + adv[i] + G - closest)
-        if text[i:i + 2] == 'ZA':
-            # A's left leg as a line x = m*y + c (layout units), fitted on its lower part
-            pts = [(y, b[y][0] + X[i + 1]) for y in b if cap_h * 0.02 < y < cap_h * 0.35]
-            n_ = len(pts); my = sum(y for y, _ in pts) / n_; mx = sum(x for _, x in pts) / n_
-            m = sum((y - my) * (x - mx) for y, x in pts) / sum((y - my) ** 2 for y, _ in pts)
-            c = mx - m * my - G
-            lo, hi = -2000, cap_h + 2000
-            cut = pathops.Path(); pen = cut.getPen()
-            pen.moveTo((-1e5, lo)); pen.lineTo((m * lo + c, lo)); pen.lineTo((m * hi + c, hi))
-            pen.lineTo((-1e5, hi)); pen.closePath()
-            cut_index = i
+        closest = min(b[y][0] + adv[i] - a[y][1] for y in a if y in b)
+        X.append(X[i] + adv[i] + gap * upm - closest)
     total = X[-1] + adv[-1]
     s = width / total
     x0 = cx - width / 2
@@ -98,30 +81,34 @@ def wordmark(width, cx, baseline, text='IBLITZA', gap=0.03):
     for i, n in enumerate(names):
         g = pathops.Path()
         gs[n].draw(TransformPen(g.getPen(), (1, 0, k, 1, X[i], 0)))
-        if cut is not None and i == cut_index:
-            g = pathops.op(g, cut, pathops.PathOp.INTERSECTION)
         for p in (pen, allb) + ((first,) if i == 0 else ()):
             g.draw(TransformPen(p, final))
     return pen.getCommands(), allb.bounds, first.bounds
 
 
+TURN = (0.30, 0.70)  # stretch of each leaf (0..1 along it) where it rounds over
+
+
 def blade(x, y, L, a0, bend, w0):
-    """One spider-plant leaf: a long, narrow ribbon with smooth edges that leaves (x, y) at
-    angle a0 (degrees from straight up, clockwise), arches over by `bend` degrees and
-    tapers to a sharp point. The curl tightens towards the tip, so it ends pointing down."""
-    n = 80
+    """One leaf: a long, narrow ribbon with smooth edges that leaves (x, y) at angle a0
+    (degrees from straight up, clockwise) and turns by `bend` degrees, tapering to a point.
+    The turn is eased in and out, so the leaf rises straight, rounds over the top and comes
+    down straight again: an upside-down U. Past 180 degrees the tip curls back inward."""
+    n = 100
     pts, ang = [(x, y)], [math.radians(a0)]
     px, py = x, y
     for k in range(1, n + 1):
         t = k / n
-        th = math.radians(a0 + bend * t)  # constant curl: each leaf is a clean arch
+        u = min(1, max(0, (t - TURN[0]) / (TURN[1] - TURN[0])))
+        e = u * u * (3 - 2 * u)                       # all the turning happens inside TURN
+        th = math.radians(a0 + bend * e)
         px += math.sin(th) * L / n
         py -= math.cos(th) * L / n
         pts.append((px, py)); ang.append(th)
     left, right = [], []
     for k, ((sx, sy), th) in enumerate(zip(pts, ang)):
         t = k / n
-        w = w0 * (1 - t) ** 0.85 * (0.55 + 0.45 * math.sin(math.pi * min(1, t * 2.2)))
+        w = w0 * (1 - t) ** 0.8 * (0.6 + 0.4 * math.sin(math.pi * min(1, t * 2.4)))
         nx, ny = math.cos(th), math.sin(th)
         left.append((sx - nx * w, sy - ny * w)); right.append((sx + nx * w, sy + ny * w))
     poly = left + right[::-1]
@@ -137,10 +124,11 @@ def palm(x0, x1, y, cap, fill):
     base = (f'M{x0 + sx(gap):.1f},{yb:.1f} L{x1 + sx(gap):.1f},{yb:.1f} '
             f'L{x1 + sx(gap + h):.1f},{yt:.1f} L{x0 + sx(gap + h):.1f},{yt:.1f}Z')
     hx, hy = (x0 + x1) / 2 + sx(gap + h), yt + h * 0.15
-    L, W = cap * 1.25, cap * 0.06
-    # (start angle, curl, length, width), mirrored left/right: long leaves that rise and fall
-    # in round arches, nested from a tall inner pair to a short outer one.
-    half = [(4, 172, 1.00, 1.0), (18, 160, 0.84, 1.0), (36, 144, 0.66, 0.9), (60, 124, 0.48, 0.8)]
+    L, W = cap * 1.9, cap * 0.042
+    # (start angle, turn, length, width), mirrored left/right: tall, skinny upside-down U's,
+    # tips curling back in. All rise nearly straight up; each is longer than the one inside it,
+    # so the arches nest like a rainbow instead of crossing.
+    half = [(2, 193, 0.46, 0.85), (5, 193, 0.64, 0.9), (8, 193, 0.82, 0.95), (11, 193, 1.00, 1.0)]
     spec = [(a, b, l, w) for a, b, l, w in half] + [(-a, -b, l, w) for a, b, l, w in half]
     d = ' '.join(blade(hx, hy, L * l, a, b, W * w) for a, b, l, w in spec)
     return f'<g fill="{fill}"><path d="{base}"/><path d="{d}"/></g>'
