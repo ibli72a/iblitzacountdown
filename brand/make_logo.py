@@ -10,7 +10,7 @@ from fontTools.pens.boundsPen import BoundsPen
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FONT = TTFont(os.path.join(HERE, 'barlow-semi-condensed-latin-800-italic.woff2'))
-LIME, ORANGE, PINK, INK = '#d3ee5f', '#ff9a0a', '#ff3ea5', '#1b1030'
+LIME, ORANGE, PINK, INK, GREEN = '#d3ee5f', '#ff9a0a', '#ff3ea5', '#1b1030', '#0fae4b'
 SHEAR = 0.20  # extra slant on top of the font's own italic
 SLANT = math.tan(math.radians(-FONT['post'].italicAngle)) + SHEAR
 
@@ -51,7 +51,7 @@ def frond(x, y, L, a0, bend, notches=4):
     upper, lower = [], []
     for k, ((sx, sy), th) in enumerate(zip(spine, ang)):
         t = k / n
-        w = L * 0.16 * math.sin(math.pi * t) ** 0.6 * (1 - 0.35 * t)
+        w = L * 0.19 * math.sin(math.pi * t) ** 0.6 * (1 - 0.35 * t)
         nx, ny = math.cos(th) * side, math.sin(th) * side   # unit normal
         upper.append((sx - nx * w * 0.25, sy - ny * w * 0.25))
         # leaflets: the lower edge swings between full width and a notch near the spine
@@ -62,26 +62,33 @@ def frond(x, y, L, a0, bend, notches=4):
     return 'M' + ' L'.join(f'{a:.1f},{b:.1f}' for a, b in pts) + 'Z'
 
 
-def palm(x, y, size, fill):
-    """Palm crown floating above the I (the I is the trunk): arched, drooping fronds."""
-    spec = [  # (start angle, curl, length)
-        (62, 88, 1.00), (20, 100, 0.92), (-62, -88, 1.00), (-20, -100, 0.92),
+def palm(x0, x1, y, cap, fill):
+    """Palm on the I: a small gap above the letter, a leaf base exactly as wide as the stem
+    (same slant, so it reads as the top of the trunk), then a full crown of fronds."""
+    gap, h = cap * 0.055, cap * 0.075
+    sx = lambda dy: dy * SLANT          # horizontal shift for a rise of dy, following the italic
+    yb, yt = y - gap, y - gap - h
+    base = (f'M{x0 + sx(gap):.1f},{yb:.1f} L{x1 + sx(gap):.1f},{yb:.1f} '
+            f'L{x1 + sx(gap + h):.1f},{yt:.1f} L{x0 + sx(gap + h):.1f},{yt:.1f}Z')
+    hx, hy = (x0 + x1) / 2 + sx(gap + h), yt + h * 0.15
+    L = cap * 0.52
+    spec = [  # (start angle, curl, length): long drooping sides, fuller arches, short top
+        (64, 92, 1.00), (38, 104, 0.94), (16, 112, 0.84), (3, 80, 0.62),
+        (-64, -92, 1.00), (-38, -104, 0.94), (-16, -112, 0.84), (-3, -80, 0.62),
     ]
-    d = ' '.join(frond(x, y, size * l, a, b) for a, b, l in spec)
-    return (f'<g fill="{fill}"><path d="{d}"/>'
-            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{size * 0.05:.1f}"/></g>')
+    d = ' '.join(frond(hx, hy, L * l, a, b) for a, b, l in spec)
+    return f'<g fill="{fill}"><path d="{base}"/><path d="{d}"/></g>'
 
 
-def mark(width, cx, cy, grad='url(#sunset)', accent=PINK):
-    """Wordmark with a single-colour palm crown floating over the I, centred on (cx, cy)."""
+def mark(width, cx, cy, grad='url(#sunset)', accent=GREEN):
+    """Wordmark with a single-colour palm crown on the I, centred on (cx, cy)."""
     _, (bx0, by0, bx1, by1), _ = wordmark(width, cx, 0)
     cap = by1 - by0
     # Re-centre: the shear pushes the tops right, and the letters sit on cy by their cap height.
-    path, (bx0, by0, bx1, by1), (ix0, iy0, ix1, iy1) = wordmark(width, 2 * cx - (bx0 + bx1) / 2, cy + cap * 0.68)
+    path, (bx0, by0, bx1, by1), (ix0, iy0, ix1, iy1) = wordmark(width, 2 * cx - (bx0 + bx1) / 2, cy + cap * 0.62)
     # The italic I is a parallelogram: its top edge is the right-hand end of its bounding box.
     stem = (ix1 - ix0) - cap * SLANT
-    lift = cap * 0.26  # hub height above the I; the crown floats clear of the letter
-    body = (palm(ix1 - stem / 2 + lift * SLANT, by0 - lift, cap * 0.62, accent)
+    body = (palm(ix1 - stem, ix1, by0, cap, accent)
             + f'<path d="{path}" fill="{grad}"/>')
     defs = (f'<linearGradient id="sunset" gradientUnits="userSpaceOnUse" x1="0" y1="{by0:.1f}" x2="0" y2="{by1:.1f}">'
             f'<stop offset="0.12" stop-color="{ORANGE}"/><stop offset="0.9" stop-color="{PINK}"/></linearGradient>')
