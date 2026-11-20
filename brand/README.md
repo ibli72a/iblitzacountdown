@@ -16,4 +16,4 @@ All SVGs are self-contained (lettering is outlined, no fonts needed), so they ex
 Colours: lime `#d3ee5f`, orange `#ff9a0a`, pink `#ff3ea5`, ink `#1b1030`, palm green `#0fae4b`.
 Lettering: Barlow Semi Condensed ExtraBold Italic, slanted further (SIL Open Font License, see `OFL-Barlow.txt`).
 
-Regenerate with `pip install fonttools brotli && python3 brand/make_logo.py`.
+Regenerate with `pip install fonttools brotli skia-pathops && python3 brand/make_logo.py`.
