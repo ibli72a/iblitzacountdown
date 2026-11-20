@@ -12,7 +12,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FONT = TTFont(os.path.join(HERE, 'barlow-semi-condensed-latin-800-italic.woff2'))
 LIME, ORANGE, PINK, INK, GREEN = '#d3ee5f', '#ff9a0a', '#ff3ea5', '#1b1030', '#0fae4b'
 SHEAR = 0.20  # extra slant on top of the font's own italic
-SLANT = math.tan(math.radians(-FONT['post'].italicAngle)) + SHEAR
+ITALIC = math.tan(math.radians(-FONT['post'].italicAngle))
+SLANT = ITALIC + SHEAR
+STRETCH = 1.22  # letters drawn this much taller than the font, slant kept the same
 
 
 def wordmark(width, cx, baseline, text='IBLITZA', tracking=-0.032):
@@ -26,7 +28,7 @@ def wordmark(width, cx, baseline, text='IBLITZA', tracking=-0.032):
     pen, allb, first = SVGPathPen(gs, ntos=lambda v: f'{v:.2f}'), BoundsPen(gs), BoundsPen(gs)
     x = 0.0
     for i, (n, a) in enumerate(zip(names, adv)):
-        t = (s, 0, SHEAR * s, -s, x0 + x * s, baseline)
+        t = (s, 0, (SLANT * STRETCH - ITALIC) * s, -s * STRETCH, x0 + x * s, baseline)
         for p in (pen, allb) + ((first,) if i == 0 else ()):
             gs[n].draw(TransformPen(p, t))
         x += a + tracking * upm
@@ -105,20 +107,20 @@ files['iblitza-avatar.svg'] = svg(1024, 1024, d, f'<rect width="1024" height="10
 # Same, dark background.
 files['iblitza-avatar-dark.svg'] = svg(1024, 1024, d, f'<rect width="1024" height="1024" fill="{INK}"/>{b}')
 # Wordmark only, transparent: gradient, and single-colour versions for print / one-colour use.
-d, b = mark(1000, 540, 300)
-files['iblitza-wordmark.svg'] = svg(1080, 520, d, b)
+d, b = mark(900, 560, 380)
+files['iblitza-wordmark.svg'] = svg(1080, 680, d, b)
 for name, col in [('ink', INK), ('white', '#ffffff')]:
-    d1, b1 = mark(1000, 540, 300, grad=col, accent=col)
-    files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 520, '', b1)
+    d1, b1 = mark(900, 560, 380, grad=col, accent=col)
+    files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 680, '', b1)
 
 # Black & white: square avatars and wide wordmarks, each on a solid background.
 for name, fg, bg in [('black-on-white', '#000000', '#ffffff'), ('white-on-black', '#ffffff', '#000000')]:
     _, b1 = mark(820, 512, 512, grad=fg, accent=fg)
     files[f'iblitza-avatar-{name}.svg'] = svg(1024, 1024, '', f'<rect width="1024" height="1024" fill="{bg}"/>{b1}')
-    _, b1 = mark(1000, 540, 300, grad=fg, accent=fg)
-    files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 520, '', f'<rect width="1080" height="520" fill="{bg}"/>{b1}')
-_, b1 = mark(1000, 540, 300, grad='#000000', accent='#000000')
-files['iblitza-wordmark-black.svg'] = svg(1080, 520, '', b1)
+    _, b1 = mark(900, 560, 380, grad=fg, accent=fg)
+    files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 680, '', f'<rect width="1080" height="680" fill="{bg}"/>{b1}')
+_, b1 = mark(900, 560, 380, grad='#000000', accent='#000000')
+files['iblitza-wordmark-black.svg'] = svg(1080, 680, '', b1)
 
 for n, s in files.items():
     with open(os.path.join(HERE, n), 'w') as fh:
