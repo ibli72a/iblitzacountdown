@@ -15,7 +15,7 @@ SHEAR = 0.20  # extra slant on top of the font's own italic
 SLANT = math.tan(math.radians(-FONT['post'].italicAngle)) + SHEAR
 
 
-def wordmark(width, cx, baseline, text='IBLITZA', tracking=-0.005):
+def wordmark(width, cx, baseline, text='IBLITZA', tracking=-0.032):
     """Outline `text` scaled to `width`, centred on cx. Returns (path, box, first-glyph box)."""
     gs, cmap, upm = FONT.getGlyphSet(), FONT.getBestCmap(), FONT['head'].unitsPerEm
     names = [cmap[ord(c)] for c in text]
