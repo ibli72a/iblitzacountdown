@@ -33,7 +33,7 @@ def wordmark(width, cx, baseline, text='IBLITZA', tracking=-0.005):
     return pen.getCommands(), allb.bounds, first.bounds
 
 
-def frond(x, y, L, a0, bend, notches=4):
+def frond(x, y, L, a0, bend, notches=5):
     """One palm frond: a spine that leaves the hub at angle a0 (degrees from straight up,
     clockwise) and curls by `bend` degrees, so the tip droops. The upper edge is smooth,
     the lower edge is cut into leaflets."""
@@ -51,7 +51,7 @@ def frond(x, y, L, a0, bend, notches=4):
     upper, lower = [], []
     for k, ((sx, sy), th) in enumerate(zip(spine, ang)):
         t = k / n
-        w = L * 0.19 * math.sin(math.pi * t) ** 0.6 * (1 - 0.35 * t)
+        w = L * 0.22 * math.sin(math.pi * t) ** 0.6 * (1 - 0.35 * t)
         nx, ny = math.cos(th) * side, math.sin(th) * side   # unit normal
         upper.append((sx - nx * w * 0.25, sy - ny * w * 0.25))
         # leaflets: the lower edge swings between full width and a notch near the spine
@@ -71,10 +71,11 @@ def palm(x0, x1, y, cap, fill):
     base = (f'M{x0 + sx(gap):.1f},{yb:.1f} L{x1 + sx(gap):.1f},{yb:.1f} '
             f'L{x1 + sx(gap + h):.1f},{yt:.1f} L{x0 + sx(gap + h):.1f},{yt:.1f}Z')
     hx, hy = (x0 + x1) / 2 + sx(gap + h), yt + h * 0.15
-    L = cap * 0.52
-    spec = [  # (start angle, curl, length): long drooping sides, fuller arches, short top
-        (64, 92, 1.00), (38, 104, 0.94), (16, 112, 0.84), (3, 80, 0.62),
-        (-64, -92, 1.00), (-38, -104, 0.94), (-16, -112, 0.84), (-3, -80, 0.62),
+    L = cap * 0.78
+    spec = [  # (start angle, curl, length): tall fronds that rise first, then arch over
+        (76, 70, 0.78), (52, 78, 0.92), (30, 84, 1.00), (12, 72, 1.04),
+        (-76, -70, 0.78), (-52, -78, 0.92), (-30, -84, 1.00), (-12, -72, 1.04),
+        (2, 26, 0.80),
     ]
     d = ' '.join(frond(hx, hy, L * l, a, b) for a, b, l in spec)
     return f'<g fill="{fill}"><path d="{base}"/><path d="{d}"/></g>'
@@ -85,7 +86,7 @@ def mark(width, cx, cy, grad='url(#sunset)', accent=GREEN):
     _, (bx0, by0, bx1, by1), _ = wordmark(width, cx, 0)
     cap = by1 - by0
     # Re-centre: the shear pushes the tops right, and the letters sit on cy by their cap height.
-    path, (bx0, by0, bx1, by1), (ix0, iy0, ix1, iy1) = wordmark(width, 2 * cx - (bx0 + bx1) / 2, cy + cap * 0.62)
+    path, (bx0, by0, bx1, by1), (ix0, iy0, ix1, iy1) = wordmark(width, 2 * cx - (bx0 + bx1) / 2, cy + cap * 0.85)
     # The italic I is a parallelogram: its top edge is the right-hand end of its bounding box.
     stem = (ix1 - ix0) - cap * SLANT
     body = (palm(ix1 - stem, ix1, by0, cap, accent)
