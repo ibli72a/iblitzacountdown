@@ -64,8 +64,9 @@ def wordmark(width, cx, baseline, text='IBLITZA', gap=0.03):
     Spacing: each gap is measured where the two slanted letters come closest, and made the
     same for every pair (the font's own spacing makes T-Z read wider than L-I-T).
 
-    Z-A: the end of Z's foot is re-angled to run parallel to A's left leg, pivoting on its
-    bottom corner, so the foot keeps its full length and the gap stays even all the way up."""
+    Z-A: both ends of Z's bars are set on one line parallel to A's left leg, one gap away
+    from it (the foot pivots on its bottom corner, the top bar is extended to meet the line),
+    so Z and A fit together with an even gap, the way T and Z do."""
     gs, cmap, upm = FONT.getGlyphSet(), FONT.getBestCmap(), FONT['head'].unitsPerEm
     names = [cmap[ord(c)] for c in text]
     adv = [gs[n].width for n in names]
@@ -89,6 +90,19 @@ def wordmark(width, cx, baseline, text='IBLITZA', gap=0.03):
             cut = pathops.Path(); pen_ = cut.getPen()
             pen_.moveTo((-1e5, lo)); pen_.lineTo((m * lo + c, lo)); pen_.lineTo((m * hi + c, hi))
             pen_.lineTo((-1e5, hi)); pen_.closePath()
+            # Z's top bar: the rows from its top edge down to where the right edge turns into
+            # the diagonal (start below the rounded corner, then walk down)
+            zb = BoundsPen(gs); gs[names[i]].draw(zb)
+            y_top = zb.bounds[3]
+            ys = sorted((y for y in a if y < y_top - 40), reverse=True)
+            edge = ITALIC + k                                # slope of an upright edge
+            bar_bottom = next(y1 for y1, y2 in zip(ys, ys[1:])
+                              if (a[y1][1] - a[y2][1]) / (y1 - y2) > edge + 0.25)
+            ext = pathops.Path(); pen_ = ext.getPen()
+            xr = a[ys[0]][1] + X[i] - 60
+            pen_.moveTo((xr, bar_bottom)); pen_.lineTo((xr + 1e4, bar_bottom))
+            pen_.lineTo((xr + 1e4 + k * (y_top - bar_bottom), y_top))
+            pen_.lineTo((xr + k * (y_top - bar_bottom), y_top)); pen_.closePath()
             cut_i = i
     total = X[-1] + adv[-1]
     s = width / total
@@ -99,6 +113,7 @@ def wordmark(width, cx, baseline, text='IBLITZA', gap=0.03):
         g = pathops.Path()
         gs[n].draw(TransformPen(g.getPen(), (1, 0, k, 1, X[i], 0)))
         if i == cut_i:
+            g = pathops.op(g, ext, pathops.PathOp.UNION)                   # top bar, extended right
             g = pathops.op(g, cut, pathops.PathOp.INTERSECTION)
         for p in (pen, allb) + ((first,) if i == 0 else ()):
             g.draw(TransformPen(p, final))
@@ -137,14 +152,18 @@ def palm(x0, x1, y, cap, fill):
     base = (f'M{x0 + sx(gap):.1f},{yb:.1f} L{x1 + sx(gap):.1f},{yb:.1f} '
             f'L{x1 + sx(gap + h):.1f},{yt:.1f} L{x0 + sx(gap + h):.1f},{yt:.1f}Z')
     hx, hy = (x0 + x1) / 2 + sx(gap + h), yt + h * 0.15
-    L, W = cap * 0.95, cap * 0.085
-    # (start angle, bend, length, width), mirrored left/right: a pineapple crown. Tall, upright
-    # blades in the middle; shorter ones fanning out to the sides, tips flicking outward.
-    half = [(12, 6, 0.90, 1.0), (26, 12, 0.76, 0.95), (42, 18, 0.62, 0.9), (60, 22, 0.48, 0.85),
-            (78, 24, 0.36, 0.8)]
-    spec = ([(0, 0, 1.0, 1.0)] + [(a, b, l, w) for a, b, l, w in half]
-            + [(-a, -b, l, w) for a, b, l, w in half])
-    spec.sort(key=lambda r: -abs(r[0]))              # outer blades first, centre one on top
+    L, W = cap * 0.62, cap * 0.11
+    # (start angle, bend, length, width), mirrored left/right: a round pineapple crown. Blades
+    # of nearly equal length fanned out evenly so their tips trace a dome, with a second,
+    # shorter row filling the gaps between them.
+    outer = [(17, 10, 0.98, 1.0), (34, 16, 0.94, 0.97), (51, 22, 0.86, 0.94), (68, 26, 0.76, 0.9),
+             (84, 28, 0.62, 0.85)]
+    inner = [(8, 8, 0.80, 0.9), (25, 14, 0.76, 0.88), (42, 18, 0.70, 0.86), (59, 22, 0.62, 0.84),
+             (76, 26, 0.52, 0.8)]
+    mirror = lambda rows: rows + [(-a, -b, l, w) for a, b, l, w in rows]
+    # outer row first, then the inner row and the centre blade on top
+    spec = (sorted(mirror(outer), key=lambda r: -abs(r[0])) + sorted(mirror(inner), key=lambda r: -abs(r[0]))
+            + [(0, 0, 1.0, 1.0)])
     d = ' '.join(blade(hx, hy, L * l, a, b, W * w) for a, b, l, w in spec)
     return f'<g fill="{fill}"><path d="{base}"/><path d="{d}"/></g>'
 
