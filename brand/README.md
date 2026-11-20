@@ -14,6 +14,6 @@ All SVGs are self-contained (lettering is outlined, no fonts needed), so they ex
 | `iblitza-wordmark-ink.svg`, `iblitza-wordmark-white.svg` | One-colour wordmarks |
 
 Colours: lime `#d3ee5f`, orange `#ff9a0a`, pink `#ff3ea5`, ink `#1b1030`.
-Lettering: Barlow Semi Condensed ExtraBold Italic (SIL Open Font License, see `OFL-Barlow.txt`).
+Lettering: Barlow Semi Condensed ExtraBold Italic, slanted further (SIL Open Font License, see `OFL-Barlow.txt`).
 
 Regenerate with `pip install fonttools brotli && python3 brand/make_logo.py`.
