@@ -3,7 +3,7 @@
 The I is a palm tree: the letter is the trunk, with a few wavy rings cut into it, and a crown
 of fronds sits on top of it. The word sits across a warm sun disc and breaks out of it.
 
-Colour (flat, on white): blue lettering, green palm, warm orange-yellow sun. One colour: the sun is solid ink and
+Colour (flat, on white): blue lettering, palm in three greens, warm orange-yellow sun. One colour: the sun is solid ink and
 whatever of the word and palm falls on it is knocked out to the paper colour, so the mark
 holds up printed in black only (or white only on a dark ground).
 
@@ -28,8 +28,8 @@ FONT = TTFont(ARGS.font)
 
 BLUE = '#0b5cad'                     # lettering: Mediterranean blue
 SUN = '#ffb21f'                      # the sun disc
-GREEN = '#13a84b'                    # the palm
-WHITE = '#ffffff'                    # background; also the thin lines between fronds
+GREENS = ['#0b7a3b', '#13a84b', '#5fcf6e']   # palm, flat: back, middle and front fronds
+WHITE = '#ffffff'                    # background
 
 
 # ---- lettering ---------------------------------------------------------------------------
@@ -153,7 +153,7 @@ def frond(x, y, L, a0, bend, W, teeth=4):
 FRONDS = [
     (-12, -100, 0.92, .17, 0), (14, 100, 0.90, .17, 0),
     (-58, -80, 1.00, .17, 1), (62, 80, 1.00, .17, 1),
-    (-95, -55, 0.82, .16, 0), (98, 55, 0.84, .16, 0),
+    (-95, -55, 0.82, .16, 2), (98, 55, 0.84, .16, 2),
     (-135, -25, 0.50, .14, 1), (138, 25, 0.50, .14, 1),
 ]
 
@@ -210,15 +210,12 @@ def disc(cx, cy, r, n=180):
 
 
 def colour(word, fronds, cap, sun=None):
-    """Full colour, flat: optional sun disc (cx, cy, r), blue word, green palm with thin white
-    lines between the fronds."""
-    sw = cap * 0.03
+    """Full colour, flat: optional sun disc (cx, cy, r), blue word, palm in three flat greens."""
     out = []
     if sun:
         out.append(f'<circle cx="{sun[0]}" cy="{sun[1]}" r="{sun[2]}" fill="{SUN}"/>')
     out.append(f'<path d="{_d(word)}" fill="{BLUE}"/>')
-    out += [f'<path d="{_d(f)}" fill="{GREEN}" stroke="{WHITE}" stroke-width="{sw:.1f}" stroke-linejoin="round"/>'
-            for f, _ in fronds]
+    out += [f'<path d="{_d(f)}" fill="{GREENS[shade]}"/>' for f, shade in fronds]
     return '', ''.join(out)
 
 

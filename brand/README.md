@@ -20,8 +20,8 @@ any size.
 knocked out to the paper colour, so the mark works printed in black only, or white only on a
 dark ground.
 
-Colours, all flat on white: blue `#0b5cad` (lettering), sun `#ffb21f`, palm `#13a84b` (fronds
-separated by thin white lines).
+Colours, all flat on white: blue `#0b5cad` (lettering), sun `#ffb21f`, palm in three greens
+`#0b7a3b` / `#13a84b` / `#5fcf6e` (back to front).
 Lettering: Galindo (SIL Open Font License, see `OFL-Galindo.txt`).
 
 Regenerate with `pip install fonttools brotli skia-pathops && python3 brand/make_logo.py`
