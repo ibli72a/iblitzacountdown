@@ -33,51 +33,45 @@ def wordmark(width, cx, baseline, text='IBLITZA', tracking=-0.032):
     return pen.getCommands(), allb.bounds, first.bounds
 
 
-def frond(x, y, L, a0, bend, notches=5):
-    """One palm frond: a spine that leaves the hub at angle a0 (degrees from straight up,
-    clockwise) and curls by `bend` degrees, so the tip droops. The upper edge is smooth,
-    the lower edge is cut into leaflets."""
-    n = 60
-    spine, ang = [(x, y)], []
+def blade(x, y, L, a0, bend, w0):
+    """One spider-plant leaf: a long, narrow ribbon with smooth edges that leaves (x, y) at
+    angle a0 (degrees from straight up, clockwise), arches over by `bend` degrees and
+    tapers to a sharp point. The curl tightens towards the tip, so it ends pointing down."""
+    n = 80
+    pts, ang = [(x, y)], [math.radians(a0)]
     px, py = x, y
     for k in range(1, n + 1):
         t = k / n
-        th = math.radians(a0 + bend * t * t)
+        th = math.radians(a0 + bend * t ** 1.6)
         px += math.sin(th) * L / n
         py -= math.cos(th) * L / n
-        spine.append((px, py)); ang.append(th)
-    ang.insert(0, math.radians(a0))
-    side = 1 if bend >= 0 else -1          # which normal points "up/outside" of the curl
-    upper, lower = [], []
-    for k, ((sx, sy), th) in enumerate(zip(spine, ang)):
+        pts.append((px, py)); ang.append(th)
+    left, right = [], []
+    for k, ((sx, sy), th) in enumerate(zip(pts, ang)):
         t = k / n
-        w = L * 0.22 * math.sin(math.pi * t) ** 0.6 * (1 - 0.35 * t)
-        nx, ny = math.cos(th) * side, math.sin(th) * side   # unit normal
-        upper.append((sx - nx * w * 0.25, sy - ny * w * 0.25))
-        # leaflets: the lower edge swings between full width and a notch near the spine
-        # sawtooth: each leaflet runs out to a point aimed at the tip, then cuts back to the spine
-        cut = 1.0 if t < 0.22 else 0.15 + 0.85 * ((t - 0.22) * notches / 0.78 % 1) ** 0.7
-        lower.append((sx + nx * w * cut, sy + ny * w * cut))
-    pts = upper + lower[::-1]
-    return 'M' + ' L'.join(f'{a:.1f},{b:.1f}' for a, b in pts) + 'Z'
+        w = w0 * (1 - t) ** 0.85 * (0.55 + 0.45 * math.sin(math.pi * min(1, t * 2.2)))
+        nx, ny = math.cos(th), math.sin(th)
+        left.append((sx - nx * w, sy - ny * w)); right.append((sx + nx * w, sy + ny * w))
+    poly = left + right[::-1]
+    return 'M' + ' L'.join(f'{a:.1f},{b:.1f}' for a, b in poly) + 'Z'
 
 
 def palm(x0, x1, y, cap, fill):
     """Palm on the I: a small gap above the letter, a leaf base exactly as wide as the stem
-    (same slant, so it reads as the top of the trunk), then a full crown of fronds."""
+    (same slant, so it reads as the top of the trunk), then a spray of arching leaves."""
     gap, h = cap * 0.055, cap * 0.075
     sx = lambda dy: dy * SLANT          # horizontal shift for a rise of dy, following the italic
     yb, yt = y - gap, y - gap - h
     base = (f'M{x0 + sx(gap):.1f},{yb:.1f} L{x1 + sx(gap):.1f},{yb:.1f} '
             f'L{x1 + sx(gap + h):.1f},{yt:.1f} L{x0 + sx(gap + h):.1f},{yt:.1f}Z')
     hx, hy = (x0 + x1) / 2 + sx(gap + h), yt + h * 0.15
-    L = cap * 0.78
-    spec = [  # (start angle, curl, length): tall fronds that rise first, then arch over
-        (76, 70, 0.78), (52, 78, 0.92), (30, 84, 1.00), (12, 72, 1.04),
-        (-76, -70, 0.78), (-52, -78, 0.92), (-30, -84, 1.00), (-12, -72, 1.04),
-        (2, 26, 0.80),
+    L, W = cap * 0.95, cap * 0.06
+    spec = [  # (start angle, curl, length, width): arching leaves, uneven so it looks natural
+        (6, 156, 1.00, 1.0), (26, 120, 0.80, 1.0), (50, 112, 0.62, 0.9), (76, 70, 0.46, 0.8),
+        (-8, -150, 0.92, 1.0), (-28, -136, 0.84, 1.0), (-46, -104, 0.58, 0.9), (-70, -84, 0.48, 0.8),
+        (0, 74, 0.74, 0.9), (-14, -60, 0.64, 0.85), (14, 104, 0.62, 0.85), (-2, -110, 0.50, 0.8),
     ]
-    d = ' '.join(frond(hx, hy, L * l, a, b) for a, b, l in spec)
+    d = ' '.join(blade(hx, hy, L * l, a, b, W * w) for a, b, l, w in spec)
     return f'<g fill="{fill}"><path d="{base}"/><path d="{d}"/></g>'
 
 
@@ -86,7 +80,7 @@ def mark(width, cx, cy, grad='url(#sunset)', accent=GREEN):
     _, (bx0, by0, bx1, by1), _ = wordmark(width, cx, 0)
     cap = by1 - by0
     # Re-centre: the shear pushes the tops right, and the letters sit on cy by their cap height.
-    path, (bx0, by0, bx1, by1), (ix0, iy0, ix1, iy1) = wordmark(width, 2 * cx - (bx0 + bx1) / 2, cy + cap * 0.85)
+    path, (bx0, by0, bx1, by1), (ix0, iy0, ix1, iy1) = wordmark(width, 2 * cx - (bx0 + bx1) / 2, cy + cap * 0.80)
     # The italic I is a parallelogram: its top edge is the right-hand end of its bounding box.
     stem = (ix1 - ix0) - cap * SLANT
     body = (palm(ix1 - stem, ix1, by0, cap, accent)
