@@ -86,29 +86,23 @@ def wordmark(width, cx, baseline, text='IBLITZA', gap=0.03):
     return pen.getCommands(), allb.bounds, first.bounds
 
 
-TURN = (0.30, 0.70)  # stretch of each leaf (0..1 along it) where it rounds over
-
-
 def blade(x, y, L, a0, bend, w0):
-    """One leaf: a long, narrow ribbon with smooth edges that leaves (x, y) at angle a0
-    (degrees from straight up, clockwise) and turns by `bend` degrees, tapering to a point.
-    The turn is eased in and out, so the leaf rises straight, rounds over the top and comes
-    down straight again: an upside-down U. Past 180 degrees the tip curls back inward."""
-    n = 100
+    """One pineapple leaf: a stiff blade that leaves (x, y) at angle a0 (degrees from straight
+    up, clockwise), bends gently by `bend` degrees towards its tip, and tapers from a broad
+    base to a sharp point."""
+    n = 60
     pts, ang = [(x, y)], [math.radians(a0)]
     px, py = x, y
     for k in range(1, n + 1):
         t = k / n
-        u = min(1, max(0, (t - TURN[0]) / (TURN[1] - TURN[0])))
-        e = u * u * (3 - 2 * u)                       # all the turning happens inside TURN
-        th = math.radians(a0 + bend * e)
+        th = math.radians(a0 + bend * t * t)          # straight at the base, flexing near the tip
         px += math.sin(th) * L / n
         py -= math.cos(th) * L / n
         pts.append((px, py)); ang.append(th)
     left, right = [], []
     for k, ((sx, sy), th) in enumerate(zip(pts, ang)):
         t = k / n
-        w = w0 * (1 - t) ** 0.8 * (0.6 + 0.4 * math.sin(math.pi * min(1, t * 2.4)))
+        w = w0 * (1 - t) ** 1.1                        # broad at the base, straight taper to a point
         nx, ny = math.cos(th), math.sin(th)
         left.append((sx - nx * w, sy - ny * w)); right.append((sx + nx * w, sy + ny * w))
     poly = left + right[::-1]
@@ -116,20 +110,22 @@ def blade(x, y, L, a0, bend, w0):
 
 
 def palm(x0, x1, y, cap, fill):
-    """Palm on the I: a small gap above the letter, a leaf base exactly as wide as the stem
-    (same slant, so it reads as the top of the trunk), then a spray of arching leaves."""
+    """Pineapple crown on the I: a small gap above the letter, a base exactly as wide as the
+    stem (same slant, so it reads as the top of the fruit), then a fan of stiff, pointed leaves."""
     gap, h = cap * 0.055, cap * 0.075
     sx = lambda dy: dy * SLANT          # horizontal shift for a rise of dy, following the italic
     yb, yt = y - gap, y - gap - h
     base = (f'M{x0 + sx(gap):.1f},{yb:.1f} L{x1 + sx(gap):.1f},{yb:.1f} '
             f'L{x1 + sx(gap + h):.1f},{yt:.1f} L{x0 + sx(gap + h):.1f},{yt:.1f}Z')
     hx, hy = (x0 + x1) / 2 + sx(gap + h), yt + h * 0.15
-    L, W = cap * 1.9, cap * 0.042
-    # (start angle, turn, length, width), mirrored left/right: tall, skinny upside-down U's,
-    # tips curling back in. All rise nearly straight up; each is longer than the one inside it,
-    # so the arches nest like a rainbow instead of crossing.
-    half = [(2, 193, 0.46, 0.85), (5, 193, 0.64, 0.9), (8, 193, 0.82, 0.95), (11, 193, 1.00, 1.0)]
-    spec = [(a, b, l, w) for a, b, l, w in half] + [(-a, -b, l, w) for a, b, l, w in half]
+    L, W = cap * 0.95, cap * 0.085
+    # (start angle, bend, length, width), mirrored left/right: a pineapple crown. Tall, upright
+    # blades in the middle; shorter ones fanning out to the sides, tips flicking outward.
+    half = [(12, 6, 0.90, 1.0), (26, 12, 0.76, 0.95), (42, 18, 0.62, 0.9), (60, 22, 0.48, 0.85),
+            (78, 24, 0.36, 0.8)]
+    spec = ([(0, 0, 1.0, 1.0)] + [(a, b, l, w) for a, b, l, w in half]
+            + [(-a, -b, l, w) for a, b, l, w in half])
+    spec.sort(key=lambda r: -abs(r[0]))              # outer blades first, centre one on top
     d = ' '.join(blade(hx, hy, L * l, a, b, W * w) for a, b, l, w in spec)
     return f'<g fill="{fill}"><path d="{base}"/><path d="{d}"/></g>'
 
@@ -148,7 +144,7 @@ def _mark(text_width, cx, cy, grad, accent):
 
 
 def mark(width, cx, cy, grad='url(#sunset)', accent=GREEN):
-    """Wordmark with the palm on the I, the whole thing `width` wide and centred on (cx, cy)."""
+    """Wordmark with the pineapple crown on the I, the whole thing `width` wide and centred on (cx, cy)."""
     _, (x0, y0, x1, y1), _ = _mark(1000, 0, 0, grad, accent)
     tw = 1000 * width / (x1 - x0)                       # text width that makes the total `width`
     body, (x0, y0, x1, y1), (by0, by1) = _mark(tw, cx, cy, grad, accent)
