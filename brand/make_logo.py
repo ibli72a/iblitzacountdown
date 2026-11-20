@@ -33,29 +33,55 @@ def wordmark(width, cx, baseline, text='IBLITZA', tracking=-0.005):
     return pen.getCommands(), allb.bounds, first.bounds
 
 
+def frond(x, y, L, a0, bend, notches=4):
+    """One palm frond: a spine that leaves the hub at angle a0 (degrees from straight up,
+    clockwise) and curls by `bend` degrees, so the tip droops. The upper edge is smooth,
+    the lower edge is cut into leaflets."""
+    n = 60
+    spine, ang = [(x, y)], []
+    px, py = x, y
+    for k in range(1, n + 1):
+        t = k / n
+        th = math.radians(a0 + bend * t * t)
+        px += math.sin(th) * L / n
+        py -= math.cos(th) * L / n
+        spine.append((px, py)); ang.append(th)
+    ang.insert(0, math.radians(a0))
+    side = 1 if bend >= 0 else -1          # which normal points "up/outside" of the curl
+    upper, lower = [], []
+    for k, ((sx, sy), th) in enumerate(zip(spine, ang)):
+        t = k / n
+        w = L * 0.16 * math.sin(math.pi * t) ** 0.6 * (1 - 0.35 * t)
+        nx, ny = math.cos(th) * side, math.sin(th) * side   # unit normal
+        upper.append((sx - nx * w * 0.25, sy - ny * w * 0.25))
+        # leaflets: the lower edge swings between full width and a notch near the spine
+        # sawtooth: each leaflet runs out to a point aimed at the tip, then cuts back to the spine
+        cut = 1.0 if t < 0.22 else 0.15 + 0.85 * ((t - 0.22) * notches / 0.78 % 1) ** 0.7
+        lower.append((sx + nx * w * cut, sy + ny * w * cut))
+    pts = upper + lower[::-1]
+    return 'M' + ' L'.join(f'{a:.1f},{b:.1f}' for a, b in pts) + 'Z'
+
+
 def palm(x, y, size, fill):
-    """Palm crown only: fronds fanning out of the top of the I, which is the trunk."""
-    out = []
-    for deg, ln in [(-92, 0.95), (-58, 1.0), (-24, 1.05), (-126, 1.0), (-160, 1.05)]:
-        a = math.radians(deg)
-        L = size * ln
-        ex, ey = x + L * math.cos(a), y + L * math.sin(a) + L * 0.30  # tip droops
-        mx, my = x + L * 0.55 * math.cos(a), y + L * 0.55 * math.sin(a) - L * 0.12
-        nx, ny = -math.sin(a) * size * 0.19, math.cos(a) * size * 0.19  # frond half-width
-        out.append(f'M{x:.1f},{y:.1f} Q{mx + nx:.1f},{my + ny:.1f} {ex:.1f},{ey:.1f} '
-                   f'Q{mx - nx:.1f},{my - ny:.1f} {x:.1f},{y:.1f}Z')
-    return f'<path d="{" ".join(out)}" fill="{fill}"/>'
+    """Palm crown floating above the I (the I is the trunk): arched, drooping fronds."""
+    spec = [  # (start angle, curl, length)
+        (62, 88, 1.00), (20, 100, 0.92), (-62, -88, 1.00), (-20, -100, 0.92),
+    ]
+    d = ' '.join(frond(x, y, size * l, a, b) for a, b, l in spec)
+    return (f'<g fill="{fill}"><path d="{d}"/>'
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{size * 0.05:.1f}"/></g>')
 
 
-def mark(width, cx, cy, grad='url(#sunset)', accent_top=ORANGE, accent_bottom=PINK):
-    """Wordmark with the palm crown on the I, centred on (cx, cy)."""
+def mark(width, cx, cy, grad='url(#sunset)', accent=PINK):
+    """Wordmark with a single-colour palm crown floating over the I, centred on (cx, cy)."""
     _, (bx0, by0, bx1, by1), _ = wordmark(width, cx, 0)
     cap = by1 - by0
     # Re-centre: the shear pushes the tops right, and the letters sit on cy by their cap height.
-    path, (bx0, by0, bx1, by1), (ix0, iy0, ix1, iy1) = wordmark(width, 2 * cx - (bx0 + bx1) / 2, cy + cap / 2)
+    path, (bx0, by0, bx1, by1), (ix0, iy0, ix1, iy1) = wordmark(width, 2 * cx - (bx0 + bx1) / 2, cy + cap * 0.68)
     # The italic I is a parallelogram: its top edge is the right-hand end of its bounding box.
     stem = (ix1 - ix0) - cap * SLANT
-    body = (palm(ix1 - stem / 2, by0 + cap * 0.02, cap * 0.30, accent_top)
+    lift = cap * 0.26  # hub height above the I; the crown floats clear of the letter
+    body = (palm(ix1 - stem / 2 + lift * SLANT, by0 - lift, cap * 0.62, accent)
             + f'<path d="{path}" fill="{grad}"/>')
     defs = (f'<linearGradient id="sunset" gradientUnits="userSpaceOnUse" x1="0" y1="{by0:.1f}" x2="0" y2="{by1:.1f}">'
             f'<stop offset="0.12" stop-color="{ORANGE}"/><stop offset="0.9" stop-color="{PINK}"/></linearGradient>')
@@ -80,16 +106,16 @@ files['iblitza-avatar-dark.svg'] = svg(1024, 1024, d, f'<rect width="1024" heigh
 d, b = mark(1000, 540, 300)
 files['iblitza-wordmark.svg'] = svg(1080, 520, d, b)
 for name, col in [('ink', INK), ('white', '#ffffff')]:
-    d1, b1 = mark(1000, 540, 300, grad=col, accent_top=col, accent_bottom=col)
+    d1, b1 = mark(1000, 540, 300, grad=col, accent=col)
     files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 520, '', b1)
 
 # Black & white: square avatars and wide wordmarks, each on a solid background.
 for name, fg, bg in [('black-on-white', '#000000', '#ffffff'), ('white-on-black', '#ffffff', '#000000')]:
-    _, b1 = mark(820, 512, 512, grad=fg, accent_top=fg, accent_bottom=fg)
+    _, b1 = mark(820, 512, 512, grad=fg, accent=fg)
     files[f'iblitza-avatar-{name}.svg'] = svg(1024, 1024, '', f'<rect width="1024" height="1024" fill="{bg}"/>{b1}')
-    _, b1 = mark(1000, 540, 300, grad=fg, accent_top=fg, accent_bottom=fg)
+    _, b1 = mark(1000, 540, 300, grad=fg, accent=fg)
     files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 520, '', f'<rect width="1080" height="520" fill="{bg}"/>{b1}')
-_, b1 = mark(1000, 540, 300, grad='#000000', accent_top='#000000', accent_bottom='#000000')
+_, b1 = mark(1000, 540, 300, grad='#000000', accent='#000000')
 files['iblitza-wordmark-black.svg'] = svg(1080, 520, '', b1)
 
 for n, s in files.items():
