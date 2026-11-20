@@ -4,13 +4,14 @@ The I is a palm tree: the letter is the trunk (with wavy rings cut into it) and 
 fronds sits on top. In the full logo the word is centred across a warm sun, its ends just
 breaking out on both sides.
 
-All files have a transparent background, except the `-on-black` / `-on-white` ones. The SVGs are self-contained (lettering is outlined, no
+All files have a transparent background, except `iblitza-github` and the `-on-black` / `-on-white` ones. The SVGs are self-contained (lettering is outlined, no
 fonts needed), so they export to PNG at any size.
 
 | File | Use |
 | --- | --- |
 | `iblitza-logo.svg` | The logo: word + palm + sun, colour |
-| `iblitza-avatar.svg` / `iblitza-avatar-1024.png` | Same, on a square canvas (GitHub org, Slack…) |
+| `iblitza-avatar.svg` / `iblitza-avatar-1024.png` | Same, on a square canvas (Slack, socials…) |
+| `iblitza-github.svg` / `iblitza-github-1024.png` | GitHub org avatar: white ground, extra margin for the rounded corners |
 | `iblitza-wordmark.svg` | Word + palm, no sun, colour |
 | `iblitza-wordmark-black.svg`, `iblitza-wordmark-white.svg` | Word + palm in one colour |
 | `iblitza-avatar-black.svg`, `iblitza-avatar-white.svg` (+ `-1024.png`) | Same, on a square canvas |

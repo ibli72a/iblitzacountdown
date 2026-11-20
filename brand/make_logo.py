@@ -262,6 +262,8 @@ word, fronds, cap = build(2 * R * 1.06, 0, R * 0.06)
 box = _union_bounds([disc(*sun), word] + [f for f, _ in fronds])
 files['iblitza-logo.svg'] = svg(box, colour(word, fronds, sun))
 files['iblitza-avatar.svg'] = svg(box, colour(word, fronds, sun), square=True)
+# For GitHub: white ground (dark mode would swallow the blue) and room for the rounded corners.
+files['iblitza-github.svg'] = svg(box, colour(word, fronds, sun), pad=0.1, square=True, bg='#ffffff')
 
 # Wordmark (no sun) in colour, and the one-colour versions: word and palm, no sun.
 mono = one_colour(word, fronds, cap)
