@@ -15,7 +15,7 @@ LIME, ORANGE, PINK, INK, GREEN = '#d3ee5f', '#ff9a0a', '#ff3ea5', '#1b1030', '#0
 SHEAR = 0.12  # extra slant on top of the font's own italic
 ITALIC = math.tan(math.radians(-FONT['post'].italicAngle))
 SLANT = ITALIC + SHEAR
-STRETCH = 1.22  # letters drawn this much taller than the font, slant kept the same
+STRETCH = 1.16  # letters drawn this much taller than the font, slant kept the same
 
 
 def _profile(gs, name, k, step=4):
@@ -138,7 +138,7 @@ def palm(x0, x1, y, cap, fill):
     """Pineapple crown on the I. After a small gap, the I carries on upward as a short core of
     exactly its width and slant; leaves sprout all round it, from both sides and the top, the
     lower ones longer and more open, the upper ones shorter and more upright."""
-    gap, core = cap * 0.055, cap * 0.30
+    gap, core = cap * 0.03, cap * 0.30
     sx = lambda dy: dy * SLANT           # horizontal shift for a rise of dy, following the italic
     yb, yt = y - gap, y - gap - core
     body = (f'M{x0 + sx(gap):.1f},{yb:.1f} L{x1 + sx(gap):.1f},{yb:.1f} '
@@ -147,8 +147,7 @@ def palm(x0, x1, y, cap, fill):
     L, W = cap * 0.40, cap * 0.05
     leaves = []
     # (height up the core 0..1, outward angle, bend, length): one row per side
-    for f, ang, bend, ln in [(0.05, 34, 10, 0.78), (0.30, 26, 8, 0.82), (0.55, 18, 6, 0.86),
-                             (0.80, 11, 4, 0.88)]:
+    for f, ang, bend, ln in [(0.30, 26, 8, 0.84), (0.55, 18, 6, 0.86), (0.80, 11, 4, 0.88)]:
         dy = gap + f * core
         leaves.append((x0 + sx(dy) + W * 0.6, yb - f * core, -ang + lean, -bend, ln))
         leaves.append((x1 + sx(dy) - W * 0.6, yb - f * core, ang + lean, bend, ln))
@@ -156,7 +155,26 @@ def palm(x0, x1, y, cap, fill):
     for ang, bend, ln in [(-6, -3, 0.78), (6, 3, 0.78), (0, 0, 0.84)]:
         leaves.append((cx, ty, ang + lean, bend, ln))
     d = ' '.join(blade(px, py, L * ln, a, b, W) for px, py, a, b, ln in leaves)
-    return f'<g fill="{fill}"><path d="{body}"/><path d="{d}"/></g>'
+    # One shape, cut flat along the bottom of the core: nothing pokes out below the base.
+    # (each piece is merged on its own: leaves are drawn in both directions, and filling them
+    # as one path would punch holes where they overlap)
+    shape = pathops.Path()
+    for poly in re.findall(r'M([^Z]*)Z', body + ' ' + d):
+        pts = [tuple(map(float, p.split(','))) for p in re.findall(r'-?[\d.]+,-?[\d.]+', poly)]
+        piece = pathops.Path(); pen = piece.getPen()
+        pen.moveTo(pts[0])
+        for q in pts[1:]:
+            pen.lineTo(q)
+        pen.closePath()
+        shape = pathops.op(shape, piece, pathops.PathOp.UNION)
+    above = pathops.Path(); pen = above.getPen()
+    for q in [(-1e5, yb), (1e5, yb), (1e5, -1e5), (-1e5, -1e5)]:
+        (pen.lineTo if q != (-1e5, yb) else pen.moveTo)(q)
+    pen.closePath()
+    shape = pathops.op(shape, above, pathops.PathOp.INTERSECTION)
+    out = SVGPathPen(None, ntos=lambda v: f'{v:.1f}')
+    shape.draw(out)
+    return f'<path d="{out.getCommands()}" fill="{fill}"/>'
 
 
 def _mark(text_width, cx, cy, grad, accent):
