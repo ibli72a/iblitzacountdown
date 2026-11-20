@@ -3,7 +3,7 @@
 The I is a palm tree: the letter is the trunk, with a few wavy rings cut into it, and a crown
 of fronds sits on top of it. The word sits across a warm sun disc and breaks out of it.
 
-Colour: blue lettering, green palm, yellow-orange sun. One colour: the sun is solid ink and
+Colour (flat, on white): blue lettering, green palm, warm orange-yellow sun. One colour: the sun is solid ink and
 whatever of the word and palm falls on it is knocked out to the paper colour, so the mark
 holds up printed in black only (or white only on a dark ground).
 
@@ -27,9 +27,9 @@ ARGS = ap.parse_args()
 FONT = TTFont(ARGS.font)
 
 BLUE = '#0b5cad'                     # lettering: Mediterranean blue
-SUN = ('#ffd23f', '#ff9a1f')         # the sun disc, top to bottom
-FROND = ['#0b7d36', '#13a84b']       # back and front fronds
-SAND = '#fff4e2'                     # background for the square avatar
+SUN = '#ffb21f'                      # the sun disc
+GREEN = '#13a84b'                    # the palm
+WHITE = '#ffffff'                    # background; also the thin lines between fronds
 
 
 # ---- lettering ---------------------------------------------------------------------------
@@ -209,17 +209,17 @@ def disc(cx, cy, r, n=180):
     return _poly([(cx + r * math.cos(2 * math.pi * k / n), cy + r * math.sin(2 * math.pi * k / n)) for k in range(n)])
 
 
-def colour(word, fronds, sun=None):
-    """Full colour: optional sun disc (cx, cy, r), blue word, palm in two greens."""
-    out, defs = [], ''
+def colour(word, fronds, cap, sun=None):
+    """Full colour, flat: optional sun disc (cx, cy, r), blue word, green palm with thin white
+    lines between the fronds."""
+    sw = cap * 0.03
+    out = []
     if sun:
-        cx, cy, r = sun
-        defs = (f'<linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">'
-                f'<stop offset="0" stop-color="{SUN[0]}"/><stop offset="1" stop-color="{SUN[1]}"/></linearGradient>')
-        out.append(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="url(#sun)"/>')
+        out.append(f'<circle cx="{sun[0]}" cy="{sun[1]}" r="{sun[2]}" fill="{SUN}"/>')
     out.append(f'<path d="{_d(word)}" fill="{BLUE}"/>')
-    out += [f'<path d="{_d(f)}" fill="{FROND[s]}"/>' for f, s in fronds]
-    return defs, ''.join(out)
+    out += [f'<path d="{_d(f)}" fill="{GREEN}" stroke="{WHITE}" stroke-width="{sw:.1f}" stroke-linejoin="round"/>'
+            for f, _ in fronds]
+    return '', ''.join(out)
 
 
 def mono(word, fronds, cap, ink, paper=None, sun=None):
@@ -249,26 +249,26 @@ def svg(w, h, body, defs='', bg=None):
 files = {}
 BW = [('black-on-white', '#000000', '#ffffff'), ('white-on-black', '#ffffff', '#000000')]
 
-# Badge: the word across a sun disc, breaking out of it on both sides. Transparent corners.
+# Badge: the word across a sun disc, breaking out of it on both sides.
 sun = (560, 500, 400)
 word, fronds, cap = layout(1000, 560, 500)
-d, b = colour(word, fronds, sun)
-files['iblitza-badge.svg'] = svg(1120, 1000, b, d)
+d, b = colour(word, fronds, cap, sun)
+files['iblitza-badge.svg'] = svg(1120, 1000, b, d, bg=WHITE)
 for name, ink, paper in BW:
     files[f'iblitza-badge-{name}.svg'] = svg(1120, 1000, mono(word, fronds, cap, ink, paper, sun), bg=paper)
 
 # Avatar: the badge on a full square (GitHub/Slack crop the corners), kept inside the safe area.
 sun = (512, 512, 360)
 word, fronds, cap = layout(860, 512, 512)
-d, b = colour(word, fronds, sun)
-files['iblitza-avatar.svg'] = svg(1024, 1024, b, d, bg=SAND)
+d, b = colour(word, fronds, cap, sun)
+files['iblitza-avatar.svg'] = svg(1024, 1024, b, d, bg=WHITE)
 for name, ink, paper in BW:
     files[f'iblitza-avatar-{name}.svg'] = svg(1024, 1024, mono(word, fronds, cap, ink, paper, sun), bg=paper)
 
 # Wordmark only (no sun), transparent and on solid grounds.
 word, fronds, cap = layout(960, 540, 340)
-d, b = colour(word, fronds)
-files['iblitza-wordmark.svg'] = svg(1080, 680, b, d)
+d, b = colour(word, fronds, cap)
+files['iblitza-wordmark.svg'] = svg(1080, 680, b, d, bg=WHITE)
 for name, ink in [('black', '#000000'), ('white', '#ffffff'), ('blue', BLUE)]:
     files[f'iblitza-wordmark-{name}.svg'] = svg(1080, 680, mono(word, fronds, cap, ink))
 for name, ink, paper in BW:
