@@ -1,27 +1,25 @@
 # IBLITZA brand files
 
 The I is a palm tree: the letter is the trunk (with wavy rings cut into it) and a crown of
-fronds sits on top. The word sits across a warm sun and breaks out of it on both sides.
+fronds sits on top. In the full logo the word is centred across a warm sun, its ends just
+breaking out on both sides.
 
-All SVGs are self-contained (lettering is outlined, no fonts needed), so they export to PNG at
-any size.
+All files have a transparent background. The SVGs are self-contained (lettering is outlined, no
+fonts needed), so they export to PNG at any size.
 
 | File | Use |
 | --- | --- |
-| `iblitza-avatar.svg` / `iblitza-avatar-1024.png` | Profile picture (GitHub org, Slack…): the badge on a white square |
-| `iblitza-avatar-black-on-white.svg`, `iblitza-avatar-white-on-black.svg` (+ `-1024.png`) | Same, one colour |
-| `iblitza-badge.svg` | Word + sun, on white |
-| `iblitza-badge-black-on-white.svg`, `iblitza-badge-white-on-black.svg` | Same, one colour |
-| `iblitza-wordmark.svg` | Word + palm only, colour, on white |
-| `iblitza-wordmark-black.svg`, `-white.svg`, `-blue.svg` | Word + palm in one colour, transparent |
-| `iblitza-wordmark-black-on-white.svg`, `iblitza-wordmark-white-on-black.svg` | One colour on a solid ground |
+| `iblitza-logo.svg` | The logo: word + palm + sun, colour |
+| `iblitza-avatar.svg` / `iblitza-avatar-1024.png` | Same, on a square canvas (GitHub org, Slack…) |
+| `iblitza-wordmark.svg` | Word + palm, no sun, colour |
+| `iblitza-wordmark-black.svg`, `iblitza-wordmark-white.svg` | Word + palm in one colour |
+| `iblitza-avatar-black.svg`, `iblitza-avatar-white.svg` (+ `-1024.png`) | Same, on a square canvas |
 
-**One colour:** the sun is solid ink, and the parts of the word and palm that fall on it are
-knocked out to the paper colour, so the mark works printed in black only, or white only on a
-dark ground.
+**One colour:** no sun. The palm and the letters are one shape with real gaps between the fronds
+and between the crown and the letters, so they stay readable in a single ink on any ground.
 
-Colours, all flat on white: blue `#0b5cad` (lettering), sun `#ffb21f`, palm in two greens
-`#13a84b` / `#5fcf6e`, alternating across the fronds.
+Colours, all flat: blue `#0b5cad` (lettering), sun `#ffb21f`, palm in two greens `#13a84b` /
+`#5fcf6e`, alternating across the fronds.
 Lettering: Galindo (SIL Open Font License, see `OFL-Galindo.txt`).
 
 Regenerate with `pip install fonttools brotli skia-pathops && python3 brand/make_logo.py`
